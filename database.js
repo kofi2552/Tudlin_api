@@ -1,20 +1,20 @@
 // backend/sequelize.js
 import { Sequelize } from "sequelize";
 
-const sequelize = new Sequelize("stupro", "root", "", {
-  host: "localhost",
-  dialect: "mysql",
-});
+// const sequelize = new Sequelize("stupro", "root", "", {
+//   host: "localhost",
+//   dialect: "mysql",
+// });
 
-// const sequelize = new Sequelize(
-//   "wauercfmnzyooavg_tudlin",
-//   "wauercfmnzyooavg_tudlin",
-//   "Kyde@25!",
-//   {
-//     host: "localhost",
-//     dialect: "mysql",
-//   }
-// );
+const sequelize = new Sequelize(
+  "wauercfmnzyooavg_tudlin",
+  "wauercfmnzyooavg_tudlin",
+  "Kyde@25!",
+  {
+    host: "localhost",
+    dialect: "mysql",
+  }
+);
 
 // Test connection
 sequelize
