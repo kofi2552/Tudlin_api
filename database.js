@@ -1,20 +1,20 @@
 // backend/sequelize.js
 import { Sequelize } from "sequelize";
+import dotenv from "dotenv";
 
-// const sequelize = new Sequelize("stupro", "root", "", {
-//   host: "localhost",
-//   dialect: "mysql",
-// });
+dotenv.config();
 
-const sequelize = new Sequelize(
-  "wauercfmnzyooavg_tudlin",
-  "wauercfmnzyooavg_tudlin",
-  "Kyde@25!",
-  {
-    host: "localhost",
-    dialect: "mysql",
-  }
-);
+const sequelize = new Sequelize(process.env.DB_URI, {
+  dialect: "postgres",
+  protocol: "postgres",
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false,
+    },
+  },
+  logging: false,
+});
 
 // Test connection
 sequelize
@@ -23,12 +23,3 @@ sequelize
   .catch((error) => console.error("Database connection error:", error));
 
 export default sequelize;
-
-// sequelize
-//   .sync({ alter: true }) // or { force: true } if you're okay with dropping existing tables
-//   .then(() => {
-//     console.log("Database synced successfully.");
-//   })
-//   .catch((error) => {
-//     console.error("Error syncing database:", error);
-//   });
