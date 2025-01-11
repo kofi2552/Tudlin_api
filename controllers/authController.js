@@ -16,10 +16,11 @@ dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// Signup Controller
 // export const signup = async (req, res) => {
-//   const { username, email, password } = req.body;
+//   const { username, email, password, role, subjects } = req.body;
+
 //   console.log("signup:", req.body);
+
 //   try {
 //     const existingUser = await User.findOne({
 //       where: {
@@ -32,34 +33,71 @@ const JWT_SECRET = process.env.JWT_SECRET;
 //       return res.status(409).json({ error: `${field} is already in use.` });
 //     }
 
-//     const newUser = await User.create({
-//       username,
-//       email,
-//       password,
-//     });
+//     const transaction = await sequelize.transaction();
 
-//     const token = jwt.sign(
-//       { id: newUser.id, username: newUser.username },
-//       JWT_SECRET,
-//       { expiresIn: "12h" }
-//     );
-//     res.cookie("authToken", token, {
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === "production",
-//       sameSite: "strict",
-//       maxAge: 12 * 60 * 60 * 1000,
-//     });
+//     try {
+//       // Create new user
+//       const newUser = await User.create(
+//         {
+//           username,
+//           email,
+//           password,
+//           role,
+//         },
+//         { transaction }
+//       );
 
-//     const subject = "🔥Welcome to Tudlin!";
-//     const userEmail = email;
-//     const header = "Your account has been created successfully!";
-//     const greetings = `Hi, ${username}`;
-//     const paragraph =
-//       "Welcome to Tudlin! We are excited to have you on board. You can now start creating and managing your classes, subjects, and more.";
+//       console.log("newUser: ", newUser);
 
-//     sendMail(userEmail, subject, greetings, header, paragraph);
+//       // Process subjects: Ensure it's in the correct structure
+//       const entries = Object.entries(subjects).flatMap(
+//         ([classId, subjectIds]) =>
+//           subjectIds.map((subjectId) => ({
+//             userId: newUser.id,
+//             classId: parseInt(classId, 10),
+//             subjectId,
+//           }))
+//       );
 
-//     res.status(201).json({ user: newUser, token });
+//       console.log("Entries to insert:", entries);
+
+//       // Insert into UserClassSubject
+//       await UserClassSubject.bulkCreate(entries, { transaction });
+
+//       // Commit transaction
+//       await transaction.commit();
+
+//       // Generate token and send response
+//       const token = jwt.sign(
+//         { id: newUser.id, username: newUser.username },
+//         JWT_SECRET,
+//         { expiresIn: "12h" }
+//       );
+
+//       res.cookie("authToken", token, {
+//         httpOnly: true,
+//         secure: process.env.NODE_ENV === "production",
+//         sameSite: "strict",
+//         maxAge: 12 * 60 * 60 * 1000,
+//       });
+
+//       const subject = "🔥Welcome to Tudlin!";
+//       const userEmail = email;
+//       const header = "Your account has been created successfully!";
+//       const greetings = `Hi, ${username}`;
+//       const paragraph =
+//         "Welcome to Tudlin! We are excited to have you on board. You can now start creating and managing your classes, subjects, and more.";
+
+//       sendMail(userEmail, subject, greetings, header, paragraph);
+
+//       res.status(201).json({ user: newUser, token });
+//     } catch (error) {
+//       await transaction.rollback();
+//       console.error("Error during user creation or subject insertion:", error);
+//       res
+//         .status(500)
+//         .json({ error: "Sorry! User was not created. An error occurred!" });
+//     }
 //   } catch (error) {
 //     console.error("Error signing up:", error);
 //     if (error.name === "SequelizeUniqueConstraintError") {
@@ -77,6 +115,7 @@ export const signup = async (req, res) => {
   console.log("signup:", req.body);
 
   try {
+    // Check if username or email is already in use
     const existingUser = await User.findOne({
       where: {
         [Op.or]: [{ username }, { email }],
@@ -91,44 +130,48 @@ export const signup = async (req, res) => {
     const transaction = await sequelize.transaction();
 
     try {
-      // Create new user
+      // Default role to "user" if not provided
       const newUser = await User.create(
         {
           username,
           email,
           password,
-          role,
+          role: role || "user",
         },
         { transaction }
       );
 
       console.log("newUser: ", newUser);
 
-      // Process subjects: Ensure it's in the correct structure
-      const entries = Object.entries(subjects).flatMap(
-        ([classId, subjectIds]) =>
-          subjectIds.map((subjectId) => ({
-            userId: newUser.id,
-            classId: parseInt(classId, 10),
-            subjectId,
-          }))
-      );
+      // If the user is a tutor and subjects are provided
+      if (role === "tutor" && subjects && Object.keys(subjects).length > 0) {
+        // Prepare entries for UserClassSubject
+        const entries = Object.entries(subjects).flatMap(
+          ([classId, subjectIds]) =>
+            subjectIds.map((subjectId) => ({
+              userId: newUser.id,
+              classId: parseInt(classId, 10),
+              subjectId,
+            }))
+        );
 
-      console.log("Entries to insert:", entries);
+        console.log("Entries to insert:", entries);
 
-      // Insert into UserClassSubject
-      await UserClassSubject.bulkCreate(entries, { transaction });
+        // Insert into UserClassSubject table
+        await UserClassSubject.bulkCreate(entries, { transaction });
+      }
 
       // Commit transaction
       await transaction.commit();
 
-      // Generate token and send response
+      // Generate JWT token
       const token = jwt.sign(
         { id: newUser.id, username: newUser.username },
         JWT_SECRET,
         { expiresIn: "12h" }
       );
 
+      // Set cookie with the token
       res.cookie("authToken", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -136,6 +179,7 @@ export const signup = async (req, res) => {
         maxAge: 12 * 60 * 60 * 1000,
       });
 
+      // Send welcome email
       const subject = "🔥Welcome to Tudlin!";
       const userEmail = email;
       const header = "Your account has been created successfully!";
@@ -145,11 +189,12 @@ export const signup = async (req, res) => {
 
       sendMail(userEmail, subject, greetings, header, paragraph);
 
+      // Send success response
       res.status(201).json({ user: newUser, token });
     } catch (error) {
       await transaction.rollback();
       console.error("Error during user creation or subject insertion:", error);
-      res
+      return res
         .status(500)
         .json({ error: "Sorry! User was not created. An error occurred!" });
     }
