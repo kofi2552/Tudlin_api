@@ -2,7 +2,6 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../database.js";
 import bcrypt from "bcryptjs";
-import Class from "./Class.js";
 
 const User = sequelize.define(
   "User",
@@ -10,12 +9,12 @@ const User = sequelize.define(
     username: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true, // Unique key for username
+      unique: true,
     },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true, // Unique key for email
+      unique: true,
     },
     resetToken: {
       type: DataTypes.STRING,
@@ -29,11 +28,10 @@ const User = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    class_id: { type: DataTypes.INTEGER, allowNull: true },
     isAdmin: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: false,
+      defaultValue: true,
     },
     role: {
       type: DataTypes.ENUM("tutor", "student", "parent"),
@@ -57,12 +55,10 @@ const User = sequelize.define(
     indexes: [
       {
         unique: true,
-        fields: ["username", "email"], // Consolidate unique constraint
+        fields: ["username", "email"],
       },
     ],
   }
 );
-
-User.belongsTo(Class, { foreignKey: "class_id" });
 
 export default User;
