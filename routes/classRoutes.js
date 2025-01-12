@@ -10,7 +10,7 @@ import {
 const router = express.Router();
 
 // POST route to create a new class
-router.post("/add", verifyToken, createClass);
+router.post("/add", createClass);
 
 // GET route to fetch all classes
 router.get("/all", getClasses);

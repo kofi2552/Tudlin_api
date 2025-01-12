@@ -12,18 +12,32 @@ import {
 const router = express.Router();
 
 // Create user
-router.post("/add", verifyToken, createUser);
+router.post("/add", createUser);
 
 // Get all users
-router.get("/all", verifyToken, getAllUsers);
+router.get("/all", getAllUsers);
 
 // Get a single user by ID
-router.get("/:id", verifyToken, getUserById);
+router.get("/:id", getUserById);
 
 // Update a user
-router.put("/edit/:id", verifyToken, updateUser);
+router.put("/edit/:id", updateUser);
 
 // Delete a user
-router.delete("/del/:id", verifyToken, deleteUser);
+router.delete("/del/:id", deleteUser);
+
+// router.post("/add", verifyToken, createUser);
+
+// // Get all users
+// router.get("/all", verifyToken, getAllUsers);
+
+// // Get a single user by ID
+// router.get("/:id", verifyToken, getUserById);
+
+// // Update a user
+// router.put("/edit/:id", verifyToken, updateUser);
+
+// // Delete a user
+// router.delete("/del/:id", verifyToken, deleteUser);
 
 export default router;

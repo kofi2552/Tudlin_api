@@ -31,7 +31,13 @@ dotenv.config();
 const port = 5000;
 
 // Middleware setup
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(
+  cors({
+    origin: ["https://tudlin-client.onrender.com", "http://localhost:5173"],
+    credentials: true,
+  })
+);
+
 app.use(bodyParser.json());
 
 app.use("/api/auth", authRoute);

@@ -14,7 +14,7 @@ import {
 const router = express.Router();
 
 // POST route to create a new school
-router.post("/add", verifyToken, createStudent);
+router.post("/add", createStudent);
 router.get("/all", getAllStudents);
 router.get("/class/:classId", getStudentsByClass);
 router.get("/:id", getStudentById);
