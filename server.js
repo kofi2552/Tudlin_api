@@ -33,7 +33,11 @@ const port = 5000;
 // Middleware setup
 app.use(
   cors({
-    origin: ["https://tudlin-client.onrender.com", "http://localhost:5173"],
+    origin: [
+      "https://tudlin-client.onrender.com",
+      "https://www.tudlin.com",
+      "http://localhost:5173",
+    ],
     credentials: true,
   })
 );
