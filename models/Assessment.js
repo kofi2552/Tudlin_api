@@ -18,19 +18,28 @@ const Assessment = sequelize.define(
         model: TaskCategory,
         key: "id",
       },
-    }, // Reference to TaskCategory model
+    },
     class_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-    }, // Class the assessment is associated with
+    },
     subject_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-    }, // Subject of the assessment
+      onDelete: "CASCADE",
+    },
     curriculum_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-    }, // Curriculum under which the assessment falls
+    },
+    schoolId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
   },
   {
     timestamps: true,
@@ -77,7 +86,10 @@ Assessment.belongsTo(TaskCategory, { foreignKey: "task_category_id" });
 Student.hasMany(StudentAssessmentScore, { foreignKey: "student_id" });
 StudentAssessmentScore.belongsTo(Student, { foreignKey: "student_id" });
 
-Assessment.belongsTo(Subject, { foreignKey: "subject_id" });
+Assessment.belongsTo(Subject, {
+  foreignKey: "subject_id",
+  onDelete: "CASCADE",
+});
 
 Assessment.belongsTo(Class, { foreignKey: "class_id" });
 

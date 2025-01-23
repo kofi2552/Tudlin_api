@@ -6,6 +6,7 @@ import {
   createStudent,
   getAllStudents,
   getStudentById,
+  getStudentByEmail,
   updateStudent,
   deleteStudent,
   getStudentsByClass,
@@ -15,6 +16,7 @@ const router = express.Router();
 
 // POST route to create a new school
 router.post("/add", createStudent);
+router.post("/verify", getStudentByEmail);
 router.get("/all", getAllStudents);
 router.get("/class/:classId", getStudentsByClass);
 router.get("/:id", getStudentById);

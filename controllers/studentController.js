@@ -1,4 +1,5 @@
 import { Student, Class, Curriculum } from "../models/associations.js";
+import School from "../models/School.js";
 
 // Create a new student
 export const createStudent = async (req, res) => {
@@ -37,7 +38,7 @@ export const getAllStudents = async (req, res) => {
 // Fetch all students in a specific class
 export const getStudentsByClass = async (req, res) => {
   const { classId } = req.params; // Get classId from the route parameters
-  console.log("class id: ", classId);
+  console.log("student class id: ", classId);
   try {
     // Fetch students where class_id matches the provided classId
     const students = await Student.findAll({
@@ -62,6 +63,44 @@ export const getStudentsByClass = async (req, res) => {
     res
       .status(500)
       .json({ error: "Failed to fetch students. Please try again." });
+  }
+};
+
+// STUDENT LOGIN -------------------------------------------------------------
+// Fetch a single student by ID
+export const getStudentByEmail = async (req, res) => {
+  const { email } = req.body;
+  console.log("recieved email: ", email, req.body);
+  try {
+    const student = await Student.findOne({
+      where: { email },
+      include: [
+        {
+          model: Class,
+          as: "class",
+          attributes: ["id", "name"],
+        },
+        {
+          model: Curriculum,
+          as: "curriculum",
+        },
+      ],
+    });
+
+    if (!student) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+
+    const school = await School.findOne({
+      where: { specialId: student.schoolId },
+    });
+    //console.log("school found: ", school);
+    if (school) {
+      res.status(200).json({ student, school });
+    }
+  } catch (error) {
+    console.error("Error fetching student:", error);
+    res.status(500).json({ error: "Failed to fetch student" });
   }
 };
 

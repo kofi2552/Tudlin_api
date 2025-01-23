@@ -16,7 +16,7 @@ export const createStudyAreaWithCurriculum = async (req, res) => {
     }
 
     // Create the new Study Area
-    const newStudyArea = await StudyAreas.create({ name });
+    const newStudyArea = await StudyAreas.create({ name, curriculumId });
 
     // Create the association between the Study Area and the Curriculum
     await CurriculumStudyAreas.create({

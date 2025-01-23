@@ -3,15 +3,31 @@ import TaskCategory from "../models/TaskCategory.js";
 import Student from "../models/Student.js";
 import Subject from "../models/Subjects.js";
 import Class from "../models/Class.js";
+import School from "../models/School.js";
+import User from "../models/User.js";
 import { Op } from "sequelize";
 
 // Create Assessment
 export const createAssessment = async (req, res) => {
-  try {
-    const { values, class_id, curriculum_id } = req.body;
-    const { name, tscore, task_category_id, subject_id } = values;
+  const { userId, schoolId } = req.params;
+  const { values, class_id, curriculum_id } = req.body;
+  const { name, tscore, task_category_id, subject_id } = values;
 
-    console.log("create task details recived: ", req.body, values);
+  console.log("create task details recived: ", req.body, values, req.params);
+
+  try {
+    const user = await User.findByPk(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const school = await School.findOne({ where: { specialId: schoolId } });
+
+    if (!school) {
+      return res.status(404).json({ error: "School not found" });
+    }
+
     const newAssessment = await Assessment.create({
       name,
       tscore,
@@ -19,8 +35,13 @@ export const createAssessment = async (req, res) => {
       class_id,
       subject_id,
       curriculum_id,
+      schoolId: school.specialId,
+      userId: user.id || userId,
     });
 
+    if (newAssessment) {
+      console.log("assessment created");
+    }
     res.status(201).json({
       message: "Assessment created successfully",
       data: newAssessment,
@@ -33,6 +54,63 @@ export const createAssessment = async (req, res) => {
 };
 
 // Get All Assessments
+export const getAllAssessmentByUser = async (req, res) => {
+  const { userId } = req.params;
+  console.log("user assesment to fetch: ", userId);
+  try {
+    const assessments = await Assessment.findAll({
+      where: { userId },
+      include: [{ model: TaskCategory, attributes: ["name", "desc"] }],
+    });
+
+    res.status(200).json(assessments);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ error: "Failed to fetch assessments", details: err.message });
+  }
+};
+
+// Get All Assessments
+export const getAllAssessmentByStudent = async (req, res) => {
+  const { studentId } = req.params;
+  console.log("stduent assesment to fetch: ", studentId);
+  try {
+    // Check if the student exists
+    const student = await Student.findByPk(studentId);
+    if (!student) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+
+    // Fetch assessments and their scores for the student
+    const assessments = await Assessment.findAll({
+      include: [
+        {
+          model: StudentAssessmentScore,
+          where: { student_id: studentId },
+          attributes: ["score", "max_score"],
+        },
+        {
+          model: TaskCategory,
+          attributes: ["name", "desc"],
+        },
+        {
+          model: Subject,
+          attributes: ["name"],
+        },
+      ],
+    });
+
+    res.status(200).json({ assessments });
+  } catch (error) {
+    console.error("Error fetching assessments for student:", error);
+    res.status(500).json({
+      error: "Failed to fetch student assessments",
+      details: error.message,
+    });
+  }
+};
+
 export const getAllAssessments = async (req, res) => {
   try {
     const assessments = await Assessment.findAll({

@@ -1,6 +1,7 @@
 import Class from "../models/Class.js";
 import Subject from "../models/Subjects.js";
 import ClassToSubjects from "../models/ClassToSubject.js";
+import CurriculumSubject from "../models/CurriculumSubject.js";
 
 // Controller to get all classes
 export const getClasses = async (req, res) => {
@@ -42,86 +43,118 @@ export const getClassById = async (req, res) => {
 };
 
 // Controller to get all subjects for a specific class
-export const getSubjectsByClass = async (req, res) => {
-  const { id } = req.params;
-  //console.log("class ID to fetch its subjects:", id);
-  try {
-    const classInstance = await Class.findByPk(id, {
-      include: {
-        model: Subject,
-        as: "Subjects", // Correct alias as per the association
-      },
-    });
+// export const getSubjectsByClass = async (req, res) => {
+//   const { id } = req.params;
+//   //console.log("class ID to fetch its subjects:", id);
+//   try {
+//     const classInstance = await Class.findByPk(id, {
+//       include: {
+//         model: Subject,
+//         as: "Subjects", // Correct alias as per the association
+//       },
+//     });
 
-    if (!classInstance) return res.status(204).send("Class not found");
-    res.status(200).json(classInstance.Subjects); // Return subjects associated with the class
-  } catch (err) {
-    console.error("Error fetching subjects", err);
-    res.status(500).send("Error fetching subjects");
-  }
-};
+//     if (!classInstance) return res.status(204).send("Class not found");
+//     res.status(200).json(classInstance.Subjects); // Return subjects associated with the class
+//   } catch (err) {
+//     console.error("Error fetching subjects", err);
+//     res.status(500).send("Error fetching subjects");
+//   }
+// };
 
 // Controller to add a subject to a class
-export const addSubjectToClass = async (req, res) => {
-  const { classId, curriculumId } = req.params;
-  const { subjectName, studyarea } = req.body; // Expect subject name to be passed in the request body
+// export const addSubjectToClass = async (req, res) => {
+//   const { classId, curriculumId } = req.params;
+//   const { subjectName, studyarea } = req.body; // Expect subject name to be passed in the request body
 
-  console.log(
-    "creating subj data: ",
-    classId,
-    subjectName,
-    studyarea,
-    curriculumId
-  );
+//   console.log(
+//     "creating subj data: ",
+//     classId,
+//     subjectName,
+//     studyarea,
+//     curriculumId
+//   );
+
+//   try {
+//     // Find the class by ID
+//     const classInstance = await Class.findByPk(classId);
+//     if (!classInstance) {
+//       return res.status(404).send("Class not found");
+//     }
+
+//     // Create or find the subject by name
+//     const [subject, created] = await Subject.findOrCreate({
+//       where: {
+//         name: subjectName,
+//         studyareaid: studyarea,
+//         class_id: classId,
+//         curriculumId: curriculumId,
+//       },
+//     });
+
+//     // Check if the association already exists
+//     const existingAssociation = await ClassToSubjects.findOne({
+//       where: { classId, subjectId: subject.id },
+//     });
+//     if (existingAssociation) {
+//       return res
+//         .status(400)
+//         .send("Subject is already associated with this class");
+//     }
+
+//     // Create the association between the subject and the class
+//     await ClassToSubjects.create({
+//       classId,
+//       subjectId: subject.id,
+//     });
+
+//     // Fetch the updated list of subjects for the class (isArchive: false)
+//     const updatedSubjects = await classInstance.getSubjects({
+//       where: { isArchive: false }, // Only include non-archived subjects
+//     });
+
+//     // Send the updated list of subjects
+//     return res.status(200).json({
+//       message: created
+//         ? "Subject created and added to class successfully"
+//         : "Subject added to class successfully",
+//       subjects: updatedSubjects,
+//     });
+//   } catch (err) {
+//     console.error("Error adding subject to class: ", err);
+//     res.status(500).send("Error adding subject to class");
+//   }
+// };
+
+export const createClass = async (req, res) => {
+  const { name, curriculumId } = req.body;
 
   try {
-    // Find the class by ID
-    const classInstance = await Class.findByPk(classId);
-    if (!classInstance) {
-      return res.status(404).send("Class not found");
-    }
+    // Step 1: Create a new class
+    const newClass = await Class.create({ name, curriculumId });
 
-    // Create or find the subject by name
-    const [subject, created] = await Subject.findOrCreate({
-      where: {
-        name: subjectName,
-        studyareaid: studyarea,
-        class_id: classId,
-        curriculumId: curriculumId,
-      },
+    // Step 2: Fetch all subjects for the curriculum
+    const curriculumSubjects = await CurriculumSubject.findAll({
+      where: { curriculumId },
     });
 
-    // Check if the association already exists
-    const existingAssociation = await ClassToSubjects.findOne({
-      where: { classId, subjectId: subject.id },
-    });
-    if (existingAssociation) {
-      return res
-        .status(400)
-        .send("Subject is already associated with this class");
-    }
+    // Step 3: Map subjects into ClassToSubjects
+    const classSubjects = curriculumSubjects.map((subject) => ({
+      classId: newClass.id,
+      subjectId: subject.id, // This should link to CurriculumSubject's ID
+    }));
 
-    // Create the association between the subject and the class
-    await ClassToSubjects.create({
-      classId,
-      subjectId: subject.id,
-    });
+    // Step 4: Bulk create records in ClassToSubjects
+    await ClassToSubjects.bulkCreate(classSubjects);
 
-    // Fetch the updated list of subjects for the class (isArchive: false)
-    const updatedSubjects = await classInstance.getSubjects({
-      where: { isArchive: false }, // Only include non-archived subjects
+    res.status(201).json({
+      message: "Class created successfully with subjects",
+      class: newClass,
+      subjects: curriculumSubjects,
     });
-
-    // Send the updated list of subjects
-    return res.status(200).json({
-      message: created
-        ? "Subject created and added to class successfully"
-        : "Subject added to class successfully",
-      subjects: updatedSubjects,
-    });
-  } catch (err) {
-    console.error("Error adding subject to class: ", err);
-    res.status(500).send("Error adding subject to class");
+  } catch (error) {
+    console.error("Error creating class:", error);
+    res.status(500).json({ error: "Failed to create class" });
   }
 };
 

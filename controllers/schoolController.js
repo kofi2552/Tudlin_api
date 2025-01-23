@@ -4,12 +4,23 @@ import School from "../models/School.js";
 export const createSchool = async (req, res) => {
   const { name, address, type } = req.body;
   console.log("new school:", req.body);
+
   try {
+    // Generate specialId
+    const year = new Date().getFullYear(); // Current year
+    const randomNumbers = Math.floor(10000 + Math.random() * 90000); // Generate 5 random numbers
+    const specialId = `${name
+      .substring(0, 2)
+      .toUpperCase()}_${year}_${randomNumbers}`; // Construct specialId
+
+    // Create the school with the generated specialId
     const newSchool = await School.create({
       name,
       address,
       type,
+      specialId, // Add the specialId to the creation payload
     });
+
     res
       .status(201)
       .json({ message: "School added successfully!", school: newSchool });
@@ -20,6 +31,21 @@ export const createSchool = async (req, res) => {
 };
 
 export const getSchool = async (req, res) => {
+  const { schoolId } = req.params;
+  console.log("school id: ", schoolId);
+  try {
+    const school = await School.findOne({ where: { specialId: schoolId } });
+    console.log("school found: ", school);
+    res.status(200).json({ school: school });
+  } catch (error) {
+    console.error("Error fetching school:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to fetch schools. Please try again." });
+  }
+};
+
+export const getAllSchools = async (req, res) => {
   try {
     const school = await School.findAll();
     //console.log(school);

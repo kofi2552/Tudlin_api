@@ -23,7 +23,7 @@ export const createSubject = async (req, res) => {
   }
 };
 
-// Get all subjects
+// Get a subject
 export const getSubject = async (req, res) => {
   const { id } = req.params;
   console.log("subject to be fetched id: ", id);

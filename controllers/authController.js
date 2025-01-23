@@ -9,6 +9,7 @@ import { Op } from "sequelize";
 import { Resend } from "resend";
 import sendMail from "../utils/sendMail.js";
 import sequelize from "../database.js";
+import School from "../models/School.js";
 
 dotenv.config();
 
@@ -110,11 +111,17 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // };
 
 export const signup = async (req, res) => {
-  const { username, email, password, role, subjects } = req.body;
+  const { username, email, password, role, subjects, schoolId } = req.body;
 
   console.log("signup:", req.body);
 
   try {
+    const school = await School.findOne({ where: { specialId: schoolId } });
+
+    if (!school) {
+      return res.status(404).json({ error: "School not found" });
+    }
+
     // Check if username or email is already in use
     const existingUser = await User.findOne({
       where: {
@@ -136,6 +143,7 @@ export const signup = async (req, res) => {
           username,
           email,
           password,
+          schoolId: school.specialId,
           role: role || "user",
         },
         { transaction }

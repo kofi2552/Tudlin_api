@@ -22,4 +22,7 @@ Class.belongsToMany(Subject, {
   as: "Subjects",
 });
 
+ClassToSubjects.belongsTo(Subject, { foreignKey: "subjectId" });
+Subject.hasMany(ClassToSubjects, { foreignKey: "subjectId" });
+
 export default ClassToSubjects;

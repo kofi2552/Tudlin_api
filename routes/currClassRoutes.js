@@ -5,6 +5,7 @@ import {
   addCurriculum,
   addClassToCurriculum,
   getClassesByCurriculum,
+  getSubjectsByClass,
   deleteClassFromCurriculum,
   updateClassInCurriculum,
 } from "../controllers/CurrClassController.js";
@@ -20,6 +21,8 @@ router.get("/:id", getCurriculumById);
 
 // Get all classes for a specific curriculum
 router.get("/classes/:curriculumId", getClassesByCurriculum);
+
+router.get("/:curriculumId/:classId/subjects", getSubjectsByClass);
 
 // Add a subject to a curriculum
 router.post("/:curriculumId/class", addClassToCurriculum);

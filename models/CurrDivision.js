@@ -1,13 +1,14 @@
+// models/Curriculum.js
 import { DataTypes } from "sequelize";
 import sequelize from "../database.js";
 
-const StudyAreas = sequelize.define(
-  "StudyAreas",
+const CurrDivision = sequelize.define(
+  "CurrDivision",
   {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     name: { type: DataTypes.STRING, allowNull: false },
-    curriculumId: {
-      type: DataTypes.INTEGER,
+    specialId: {
+      type: DataTypes.STRING,
       allowNull: false,
     },
   },
@@ -16,4 +17,4 @@ const StudyAreas = sequelize.define(
   }
 );
 
-export default StudyAreas;
+export default CurrDivision;

@@ -3,6 +3,8 @@ import {
   createAssessment,
   getAllAssessments,
   getAssessmentById,
+  getAllAssessmentByUser,
+  getAllAssessmentByStudent,
   updateAssessment,
   deleteAssessment,
   getScoresByAssessment,
@@ -15,9 +17,11 @@ import {
 
 const router = express.Router();
 
-router.post("/add", createAssessment);
+router.post("/add/:userId/:schoolId", createAssessment);
+router.get("/:userId", getAllAssessmentByUser);
+router.get("/student/:studentId", getAllAssessmentByStudent);
 router.get("/all", getAllAssessments);
-router.get("/:id", getAssessmentById);
+router.get("/task/:id", getAssessmentById);
 router.put("/edit/:id", updateAssessment);
 router.delete("/del/:id", deleteAssessment);
 

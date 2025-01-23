@@ -2,8 +2,9 @@ import express from "express";
 import {
   getClasses,
   getClassById,
-  getSubjectsByClass,
-  addSubjectToClass,
+  // getSubjectsByClass,
+  // addSubjectToClass,
+  createClass,
   deleteSubjectFromClass,
   updateSubjectInClass,
 } from "../controllers/SubClassController.js";
@@ -17,13 +18,14 @@ router.get("/all", getClasses);
 router.get("/:id", getClassById);
 
 // Route to get a all classes by its ID for a specific curriculum
-router.get("/all/:classId", getSubjectsByClass);
+// router.get("/all/:classId", getSubjectsByClass);
 
-// Route to get all subjects for a specific class
-router.get("/:classId/subjects", getSubjectsByClass);
+// // Route to get all subjects for a specific class
+// router.get("/:classId/subjects", getSubjectsByClass);
 
 // Route to add a subject to a specific class
-router.post("/add/:classId/:curriculumId", addSubjectToClass);
+router.post("/add/:classId/:curriculumId", createClass);
+// router.post("/add/:classId/:curriculumId", addSubjectToClass);
 
 // Route to delete a subject from a specific class
 router.delete("/:classId/:subjectId", deleteSubjectFromClass);

@@ -1,7 +1,7 @@
-// /backend/models/User.js
 import { DataTypes } from "sequelize";
 import sequelize from "../database.js";
 import bcrypt from "bcryptjs";
+import School from "./School.js";
 
 const User = sequelize.define(
   "User",
@@ -38,6 +38,15 @@ const User = sequelize.define(
       allowNull: false,
       defaultValue: "tutor",
     },
+    schoolId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      references: {
+        model: "Schools",
+        key: "specialId",
+      },
+      onDelete: "SET NULL",
+    },
   },
   {
     hooks: {
@@ -60,5 +69,10 @@ const User = sequelize.define(
     ],
   }
 );
+
+// Define associations
+School.hasMany(User, { foreignKey: "schoolId", onDelete: "SET NULL" });
+// Establish relationship with School
+User.belongsTo(School, { foreignKey: "schoolId", targetKey: "specialId" });
 
 export default User;

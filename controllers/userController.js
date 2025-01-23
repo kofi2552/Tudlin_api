@@ -1,16 +1,27 @@
 // controllers/userController.js
 import User from "../models/User.js";
 import createError from "../middleware/createError.js";
+import School from "../models/School.js";
 
 // Create a new user
 export const createUser = async (req, res, next) => {
   try {
-    const { username, email, password, isAdmin, role } = req.body;
+    const { username, email, password, isAdmin, schoolId, role } = req.body;
+
+    console.log("admin creating user: ", req.body);
+
+    const school = await School.findOne({ where: { specialId: schoolId } });
+
+    if (!school) {
+      return res.status(404).json({ message: "No such School Exists" });
+    }
+
     const newUser = await User.create({
       username,
       email,
       password,
       isAdmin,
+      schoolId,
       role,
     });
     res.status(201).json(newUser);
