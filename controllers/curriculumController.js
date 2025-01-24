@@ -194,6 +194,39 @@ export const addCurrDivision = async (req, res) => {
   }
 };
 
+export const DeleteCurrDivision = async (req, res) => {
+  const { divisionId } = req.params;
+  console.log("curr division id to be deleted: ", divisionId);
+  try {
+    const division = await CurrDivision.findByPk(divisionId);
+    if (division) {
+      await CurrDivision.destroy({ where: { id: divisionId } });
+    }
+    res.status(201).json({ message: "Curriculum successfully deleted." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error deleting curriculum." });
+  }
+};
+
+export const updateCurrDivision = async (req, res) => {
+  const { divisionId } = req.params;
+  const { name } = req.body;
+  console.log("updating curr id: ", divisionId);
+
+  try {
+    const division = await CurrDivision.findByPk(divisionId);
+    if (division) {
+      division.name = name;
+      await division.save();
+    }
+    res.status(201).json({ message: "Curriculum updated successfully." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error updating curriculum." });
+  }
+};
+
 // Controller to get all subjects for a specific curriculum
 export const getSubjectsByCurriculum = async (req, res) => {
   const { curriculumId } = req.params;

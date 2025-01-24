@@ -5,6 +5,7 @@ import ClassToSubjects from "../models/ClassToSubject.js";
 import CurriculumSubject from "../models/CurriculumSubject.js";
 import Subject from "../models/Subjects.js";
 import StudyArea from "../models/StudyAreas.js";
+import sequelize from "../database.js";
 
 // Fetch all curriculums
 export const getCurriculums = async (req, res) => {

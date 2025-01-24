@@ -8,10 +8,12 @@ import {
   deleteCurriculum,
   updateCurriculum,
   addCurrDivision,
+  DeleteCurrDivision,
   addSubjectToCurriculum,
   getSubjectsByCurriculum,
   deleteCurriculumSubject,
   editCurriculumSubject,
+  updateCurrDivision,
 } from "../controllers/curriculumController.js";
 
 const router = express.Router();
@@ -25,6 +27,10 @@ router.get("/all", getCurriculums);
 router.get("/cd/:schoolId", getAllCurriculumDivisionsBySchool);
 
 router.post("/cd/add/:specialId", addCurrDivision);
+
+router.delete("/cd/del/:divisionId", DeleteCurrDivision);
+
+router.put("/cd/edit/:divisionId", updateCurrDivision);
 
 router.post("/add/:divisionId", addCurriculum);
 

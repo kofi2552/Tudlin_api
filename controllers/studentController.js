@@ -5,6 +5,7 @@ import School from "../models/School.js";
 export const createStudent = async (req, res) => {
   const { curriculum_id, classG, name, email } = req.body;
 
+  console.log("new student to be added: ", req.body);
   try {
     const newStudent = await Student.create({
       class_id: classG,
