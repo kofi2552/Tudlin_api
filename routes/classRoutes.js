@@ -16,9 +16,9 @@ router.post("/add", createClass);
 router.get("/all", getClasses);
 
 // PUT route to update a class
-router.put("/edit/:id", verifyToken, updateClass);
+router.put("/edit/:id", updateClass);
 
 // DELETE route to delete a class
-router.delete("/del/:id", verifyToken, deleteClass);
+router.delete("/del/:id", deleteClass);
 
 export default router;

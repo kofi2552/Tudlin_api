@@ -4,6 +4,7 @@ import CurriculumSubject from "../models/CurriculumSubject.js";
 import StudyAreas from "../models/StudyAreas.js";
 import CurrDivision from "../models/CurrDivision.js";
 import CurriculumToDivision from "../models/CurriculumToDivision.js";
+import sequelize from "../database.js";
 
 export const getCurriculums = async (req, res) => {
   try {
@@ -228,35 +229,80 @@ export const updateCurrDivision = async (req, res) => {
 };
 
 // Controller to get all subjects for a specific curriculum
+// export const getSubjectsByCurriculum = async (req, res) => {
+//   const { curriculumId } = req.params;
+
+//   console.log("curriculums subjects id:", curriculumId);
+
+//   try {
+//     const curriculum = await Curriculum.findByPk(curriculumId, {
+//       include: {
+//         model: Subject,
+//         as: "subjects", // Alias used in the association
+//         include: {
+//           model: StudyAreas,
+//           as: "studyarea", // Alias used in the Subject -> StudyAreas association
+//         },
+//       },
+//     });
+
+//     if (!curriculum) return res.status(404).send("Curriculum not found");
+
+//     res.status(200).json({
+//       subjects: curriculum.subjects.map((subject) => ({
+//         id: subject.id,
+//         name: subject.name,
+//         studyArea: subject.studyarea?.name, // Study area details included
+//       })),
+//     });
+//   } catch (err) {
+//     console.log("Error fetching subjects and study areas:", err);
+//     res.status(500).send("Error fetching subjects and study areas");
+//   }
+// };
+
 export const getSubjectsByCurriculum = async (req, res) => {
   const { curriculumId } = req.params;
 
-  console.log("curriculums subjects id:", curriculumId);
+  console.log("Fetching subjects for curriculum ID:", curriculumId);
 
   try {
-    const curriculum = await Curriculum.findByPk(curriculumId, {
-      include: {
-        model: Subject,
-        as: "subjects", // Alias used in the association
-        include: {
-          model: StudyAreas,
-          as: "studyarea", // Alias used in the Subject -> StudyAreas association
+    // Fetch curriculum subjects directly from the CurriculumSubject table
+    const curriculumSubjects = await CurriculumSubject.findAll({
+      where: { curriculumId },
+      include: [
+        {
+          model: Subject,
+          as: "subject", // Alias used in the association
+          include: {
+            model: StudyAreas,
+            as: "studyarea", // Alias used in the Subject -> StudyAreas association
+            attributes: ["id", "name"], // Include specific fields of StudyAreas
+          },
+          attributes: ["id", "name", "isArchive"], // Include id, name, and isArchive fields of Subject
         },
-      },
+      ],
     });
 
-    if (!curriculum) return res.status(404).send("Curriculum not found");
+    if (!curriculumSubjects.length) {
+      return res.status(404).send("No subjects found for this curriculum");
+    }
 
-    res.status(200).json({
-      subjects: curriculum.subjects.map((subject) => ({
+    // Format the subjects for the response
+    const subjects = curriculumSubjects.map((curriculumSubject) => {
+      const subject = curriculumSubject.subject; // Access the linked subject
+      return {
         id: subject.id,
         name: subject.name,
-        studyArea: subject.studyarea?.name, // Study area details included
-      })),
+        studyArea: subject.studyarea?.name || "Unknown", // Include study area details
+        isArchive: subject.isArchive, // Include isArchive value
+      };
     });
+
+    res.status(200).json({ subjects });
   } catch (err) {
-    console.log("Error fetching subjects and study areas:", err);
-    res.status(500).send("Error fetching subjects and study areas");
+    console.error("Error fetching subjects for curriculum:", err);
+    res.status(500).send("Error fetching subjects for curriculum");
   }
 };
 
@@ -266,7 +312,7 @@ export const addSubjectToCurriculum = async (req, res) => {
   const { name, studyareaid } = req.body;
   console.log("body: ", req.body);
   console.log(
-    "recieved subject to be added data: ",
+    "received subject to be added data: ",
     curriculumId,
     " : ",
     name,
@@ -274,41 +320,56 @@ export const addSubjectToCurriculum = async (req, res) => {
     studyareaid
   );
 
+  const transaction = await sequelize.transaction(); // Start a transaction
+
   try {
-    // Check if the curriculum exists
-    const studyarea = await StudyAreas.findByPk(studyareaid);
+    // Check if the study area exists
+    const studyarea = await StudyAreas.findByPk(studyareaid, { transaction });
     if (!studyarea) {
-      return res.status(404).json({ error: "studyarea not found" });
+      await transaction.rollback(); // Rollback if studyarea is not found
+      return res.status(404).json({ error: "Study area not found" });
     }
 
     // Check if the curriculum exists
-    const curriculum = await Curriculum.findByPk(curriculumId);
+    const curriculum = await Curriculum.findByPk(curriculumId, { transaction });
     if (!curriculum) {
+      await transaction.rollback(); // Rollback if curriculum is not found
       return res.status(404).json({ error: "Curriculum not found" });
     }
 
     // Create the new subject in the Subject table
-    const newSubject = await Subject.create({
-      name,
-      studyareaid: studyareaid,
-      curriculumId: curriculumId,
-    });
+    const newSubject = await Subject.create(
+      {
+        name,
+        studyareaid: studyareaid,
+        curriculumId: curriculumId,
+      },
+      { transaction }
+    );
 
     if (!newSubject) {
+      await transaction.rollback(); // Rollback if newSubject creation fails
       return res.status(404).json({ error: "New Subject was not added" });
     } else {
       console.log("newSubject: ", newSubject);
     }
-    // Create the new subject in the CurriculumSubjects table
-    const newCurriculumSubject = await CurriculumSubject.create({
-      name: newSubject.name,
-      subjectId: newSubject.id,
-      studyArea: studyarea.name,
-      studyAreaId: studyareaid,
-      curriculumId: curriculumId,
-    });
 
-    //console.log("Subject added", newCurriculumSubject);
+    // Create the new subject in the CurriculumSubjects table
+    const newCurriculumSubject = await CurriculumSubject.create(
+      {
+        name: newSubject.name,
+        subjectId: newSubject.id,
+        studyArea: studyarea.name,
+        studyAreaId: studyareaid,
+        curriculumId: curriculumId,
+      },
+      { transaction }
+    );
+
+    console.log("Subject added", newCurriculumSubject);
+
+    // Commit the transaction if everything is successful
+    await transaction.commit();
 
     return res.status(201).json({
       message: "Subject added to curriculum successfully",
@@ -316,6 +377,7 @@ export const addSubjectToCurriculum = async (req, res) => {
     });
   } catch (err) {
     console.error("Error adding subject to curriculum:", err);
+    await transaction.rollback(); // Rollback the transaction on error
     res
       .status(500)
       .json({ error: "An error occurred while adding the subject" });
@@ -380,9 +442,47 @@ export const editCurriculumSubject = async (req, res) => {
   }
 };
 
+// export const deleteCurriculumSubject = async (req, res) => {
+//   const { subjectId } = req.params;
+//   console.log("Subject to be deleted:", subjectId);
+
+//   try {
+//     // Find the subject in the Subject table
+//     const subject = await Subject.findByPk(subjectId);
+//     if (!subject) {
+//       return res
+//         .status(404)
+//         .json({ error: "Subject not found in the Subject table" });
+//     }
+
+//     // Delete the associated record from the CurriculumSubject table
+//     const curriculumSubject = await CurriculumSubject.findOne({
+//       where: { subjectId },
+//     });
+//     if (curriculumSubject) {
+//       await curriculumSubject.destroy();
+//       // console.log(
+//       //   "Subject deleted from CurriculumSubject table:",
+//       //   curriculumSubject
+//       // );
+//     }
+
+//     await subject.destroy();
+
+//     return res
+//       .status(200)
+//       .json({ message: "Subject deleted successfully from both tables" });
+//   } catch (err) {
+//     console.error("Error deleting subject:", err);
+//     res
+//       .status(500)
+//       .json({ error: "An error occurred while deleting the subject" });
+//   }
+// };
+
 export const deleteCurriculumSubject = async (req, res) => {
   const { subjectId } = req.params;
-  //console.log("Subject to delete:", subjectId);
+  console.log("Subject to be archived:", subjectId);
 
   try {
     // Find the subject in the Subject table
@@ -393,29 +493,84 @@ export const deleteCurriculumSubject = async (req, res) => {
         .json({ error: "Subject not found in the Subject table" });
     }
 
-    // Delete the subject from the Subject table
-    await subject.destroy();
-    //console.log("Subject deleted from Subject table:", subject);
-
-    // Delete the associated record from the CurriculumSubject table
+    // Remove associations from the CurriculumSubject table
     const curriculumSubject = await CurriculumSubject.findOne({
       where: { subjectId },
     });
+
     if (curriculumSubject) {
       await curriculumSubject.destroy();
-      // console.log(
-      //   "Subject deleted from CurriculumSubject table:",
-      //   curriculumSubject
-      // );
+      console.log(
+        "Subject association removed from CurriculumSubject table:"
+        // curriculumSubject
+      );
     }
 
-    return res
-      .status(200)
-      .json({ message: "Subject deleted successfully from both tables" });
+    // Set the `isArchive` field to true instead of deleting the subject
+    await subject.update({ isArchive: true });
+
+    return res.status(200).json({
+      message: "Subject archived successfully and associations removed",
+    });
   } catch (err) {
-    console.error("Error deleting subject:", err);
+    console.error("Error archiving subject:", err);
     res
       .status(500)
-      .json({ error: "An error occurred while deleting the subject" });
+      .json({ error: "An error occurred while archiving the subject" });
+  }
+};
+
+export const unarchiveSubject = async (req, res) => {
+  const { subjectId } = req.params;
+  console.log("Subject to be unarchived:", subjectId);
+
+  try {
+    // Find the subject in the Subject table
+    const subject = await Subject.findByPk(subjectId);
+    if (!subject) {
+      return res.status(404).json({ error: "Subject not found" });
+    }
+
+    // Check if the subject is already unarchived (optional, but can prevent unnecessary update)
+    if (!subject.isArchive) {
+      return res.status(400).json({ error: "Subject is already unarchived" });
+    }
+
+    // Unarchive the subject by setting isArchive to false
+    await subject.update({ isArchive: false });
+    console.log("Subject unarchived successfully:", subject);
+
+    const stdyArea = await StudyAreas.findByPk(subject?.studyareaid);
+
+    // Assuming you have the curriculumId to associate the subject back
+    const curriculumSubject = await CurriculumSubject.findOne({
+      where: { subjectId }, // Find the existing relationship
+    });
+
+    if (!curriculumSubject) {
+      // Create a new CurriculumSubject association if not found
+      const newCurriculumSubject = await CurriculumSubject.create({
+        subjectId: subject.id,
+        curriculumId: subject.curriculumId,
+        name: subject.name,
+        studyAreaId: subject.studyareaid,
+        studyArea: stdyArea.name,
+      });
+      console.log("New CurriculumSubject created:", newCurriculumSubject);
+    }
+
+    return res.status(200).json({
+      message: "Subject unarchived and association restored successfully",
+      subject: {
+        id: subject.id,
+        name: subject.name,
+        isArchive: subject.isArchive,
+      },
+    });
+  } catch (err) {
+    console.error("Error unarchiving subject:", err);
+    res
+      .status(500)
+      .json({ error: "An error occurred while unarchiving the subject" });
   }
 };

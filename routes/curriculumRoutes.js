@@ -14,6 +14,7 @@ import {
   deleteCurriculumSubject,
   editCurriculumSubject,
   updateCurrDivision,
+  unarchiveSubject,
 } from "../controllers/curriculumController.js";
 
 const router = express.Router();
@@ -44,6 +45,9 @@ router.get("/:curriculumId/subjects", getSubjectsByCurriculum);
 
 // Add a subject to a curriculum
 router.post("/:curriculumId/add-subject", addSubjectToCurriculum);
+
+router.post("/archive/:subjectId", deleteCurriculumSubject);
+router.post("/unarchive/:subjectId", unarchiveSubject);
 
 // Delete a subject
 router.delete("/:curriculumId/del-subject/:subjectId", deleteCurriculumSubject);

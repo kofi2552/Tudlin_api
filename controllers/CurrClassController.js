@@ -58,7 +58,7 @@ export const addCurriculum = async (req, res) => {
 // Fetch all classes for a specific curriculum
 export const getClassesByCurriculum = async (req, res) => {
   const { curriculumId } = req.params;
-
+  console.log("fetching classess for curr id: ", curriculumId);
   try {
     const curriculum = await Curriculum.findByPk(curriculumId, {
       include: {
@@ -68,6 +68,7 @@ export const getClassesByCurriculum = async (req, res) => {
     });
 
     if (!curriculum) return res.status(404).send("Curriculum not found");
+
     res.status(200).json(curriculum.Classes); // Return associated classes
   } catch (error) {
     console.error("Error fetching classes for curriculum:", error);
@@ -136,87 +137,87 @@ export const getClassesByCurriculum = async (req, res) => {
 //   }
 // };
 
-export const getSubjectsByClass = async (req, res) => {
-  const { curriculumId, classId } = req.params;
-  console.log("class subjects req.params: ", req.params);
+// export const getSubjectsByClass = async (req, res) => {
+//   const { curriculumId, classId } = req.params;
+//   console.log("class subjects req.params: ", req.params);
 
-  try {
-    // Check if the curriculum exists
-    const curriculum = await Curriculum.findByPk(curriculumId);
-    if (!curriculum) {
-      return res.status(404).send("Curriculum not found");
-    }
+//   try {
+//     // Check if the curriculum exists
+//     const curriculum = await Curriculum.findByPk(curriculumId);
+//     if (!curriculum) {
+//       return res.status(404).send("Curriculum not found");
+//     }
 
-    if (classId === "undefined") {
-      return res.status(404).send("Class not available");
-    }
+//     if (classId === "undefined") {
+//       return res.status(404).send("Class not available");
+//     }
 
-    // Fetch all subjects in the curriculum
-    const curriculumSubjects = await CurriculumSubject.findAll({
-      where: { curriculumId },
-      attributes: ["subjectId"],
-    });
+//     // Fetch all subjects in the curriculum
+//     const curriculumSubjects = await CurriculumSubject.findAll({
+//       where: { curriculumId },
+//       attributes: ["subjectId"],
+//     });
 
-    // Fetch all subjects already linked to the class in ClassToSubjects
-    const classSubjectIds = await ClassToSubjects.findAll({
-      where: { classId },
-      attributes: ["subjectId"], // Only fetch the subjectId
-    }).then((records) => records.map((record) => record.subjectId));
+//     // Fetch all subjects already linked to the class in ClassToSubjects
+//     const classSubjectIds = await ClassToSubjects.findAll({
+//       where: { classId },
+//       attributes: ["subjectId"], // Only fetch the subjectId
+//     }).then((records) => records.map((record) => record.subjectId));
 
-    // Filter curriculum subjects to find the ones not in ClassToSubjects
-    const missingSubjects = curriculumSubjects.filter(
-      (curriculumSubject) =>
-        !classSubjectIds.includes(curriculumSubject.subjectId)
-    );
+//     // Filter curriculum subjects to find the ones not in ClassToSubjects
+//     const missingSubjects = curriculumSubjects.filter(
+//       (curriculumSubject) =>
+//         !classSubjectIds.includes(curriculumSubject.subjectId)
+//     );
 
-    if (missingSubjects) {
-      // Create entries in ClassToSubjects for the missing subjects
-      const newClassSubjects = missingSubjects.map((subject) => ({
-        classId,
-        subjectId: subject.subjectId,
-      }));
+//     if (missingSubjects) {
+//       // Create entries in ClassToSubjects for the missing subjects
+//       const newClassSubjects = missingSubjects.map((subject) => ({
+//         classId,
+//         subjectId: subject.subjectId,
+//       }));
 
-      if (newClassSubjects.length > 0) {
-        await ClassToSubjects.bulkCreate(newClassSubjects);
-        console.log("ClassToSubjects updated with new entries.");
-      }
-    }
-    // Fetch all class subjects with related data for response
-    const classSubjects = await ClassToSubjects.findAll({
-      where: { classId },
-      include: [
-        {
-          model: Subject, // Assuming Subject is associated with ClassToSubjects
-          include: [
-            {
-              model: StudyArea, // Assuming StudyArea is associated with Subject
-              as: "studyarea",
-              attributes: ["id", "name"], // Include specific fields of StudyArea
-            },
-          ],
-          attributes: ["id", "name"], // Include specific fields of Subject
-        },
-      ],
-    });
+//       if (newClassSubjects.length > 0) {
+//         await ClassToSubjects.bulkCreate(newClassSubjects);
+//         console.log("ClassToSubjects updated with new entries.");
+//       }
+//     }
+//     // Fetch all class subjects with related data for response
+//     const classSubjects = await ClassToSubjects.findAll({
+//       where: { classId },
+//       include: [
+//         {
+//           model: Subject, // Assuming Subject is associated with ClassToSubjects
+//           include: [
+//             {
+//               model: StudyArea, // Assuming StudyArea is associated with Subject
+//               as: "studyarea",
+//               attributes: ["id", "name"], // Include specific fields of StudyArea
+//             },
+//           ],
+//           attributes: ["id", "name"], // Include specific fields of Subject
+//         },
+//       ],
+//     });
 
-    // Format the response data
-    const formattedSubjects = classSubjects.map((classSubject) => {
-      const subject = classSubject.Subject;
-      return {
-        id: subject.id,
-        name: subject.name,
-        studyArea: subject.studyarea?.name || "Unknown",
-      };
-    });
+//     // Format the response data
+//     const formattedSubjects = classSubjects.map((classSubject) => {
+//       const subject = classSubject.Subject;
+//       return {
+//         id: subject.id,
+//         name: subject.name,
+//         studyArea: subject.studyarea?.name || "Unknown",
+//       };
+//     });
 
-    res.status(200).json({ subjects: formattedSubjects });
-  } catch (err) {
-    console.error("Error fetching subjects and updating ClassToSubjects:", err);
-    res
-      .status(500)
-      .send("Error fetching subjects and updating ClassToSubjects");
-  }
-};
+//     res.status(200).json({ subjects: formattedSubjects });
+//   } catch (err) {
+//     console.error("Error fetching subjects and updating ClassToSubjects:", err);
+//     res
+//       .status(500)
+//       .send("Error fetching subjects and updating ClassToSubjects");
+//   }
+// };
 
 // Add a class to a curriculum
 // export const addClassToCurriculum = async (req, res) => {
@@ -278,19 +279,19 @@ export const getSubjectsByClass = async (req, res) => {
 //         .send("Some curriculum subjects do not have valid linked subjects.");
 //     }
 
-//     // Step 3: Map subjects into ClassToSubjects
-//     const classSubjects = curriculumSubjects.map((curriculumSubject) => ({
-//       classId: classInstance.id,
-//       subjectId: curriculumSubject.subject?.id, // Ensure valid subjectId
-//     }));
+// // Step 3: Map subjects into ClassToSubjects
+// const classSubjects = curriculumSubjects.map((curriculumSubject) => ({
+//   classId: classInstance.id,
+//   subjectId: curriculumSubject.subject?.id, // Ensure valid subjectId
+// }));
 
-//     // Validate that all subjects exist in the database
-//     if (classSubjects.some((cs) => !cs.subjectId)) {
-//       return res.status(400).send("Invalid subject data in curriculum");
-//     }
+// // Validate that all subjects exist in the database
+// if (classSubjects.some((cs) => !cs.subjectId)) {
+//   return res.status(400).send("Invalid subject data in curriculum");
+// }
 
-//     // Step 4: Bulk create records in ClassToSubjects
-//     await ClassToSubjects.bulkCreate(classSubjects);
+// // Step 4: Bulk create records in ClassToSubjects
+// await ClassToSubjects.bulkCreate(classSubjects);
 
 //     res.status(200).json({
 //       message: "Class added to curriculum",
@@ -303,6 +304,273 @@ export const getSubjectsByClass = async (req, res) => {
 //     res.status(500).send("Error adding class to curriculum");
 //   }
 // };
+
+// export const addClassToCurriculum = async (req, res) => {
+//   const { curriculumId } = req.params;
+//   const { className, years } = req.body;
+
+//   console.log("curr class to be added: ", req.body, "  currId: ", curriculumId);
+
+//   const transaction = await sequelize.transaction(); // Start a transaction
+
+//   try {
+//     const curriculum = await Curriculum.findByPk(curriculumId, { transaction });
+
+//     if (!curriculum) {
+//       await transaction.rollback(); // Rollback if curriculum is not found
+//       return res.status(404).send("Curriculum not found");
+//     }
+
+//     // Create or find the class by name
+//     const [classInstance, created] = await Class.findOrCreate({
+//       where: { name: className },
+//       defaults: { years },
+//       transaction,
+//     });
+
+//     // Check if the association already exists
+//     const existingAssociation = await CurriculumToClasses.findOne({
+//       where: {
+//         curriculumId,
+//         classId: classInstance.id,
+//       },
+//       transaction,
+//     });
+
+//     if (existingAssociation) {
+//       await transaction.rollback(); // Rollback if association already exists
+//       return res
+//         .status(400)
+//         .send("Class is already associated with this curriculum");
+//     }
+
+//     // Create the association between the class and the curriculum
+//     await CurriculumToClasses.create(
+//       {
+//         curriculumId,
+//         classId: classInstance.id,
+//       },
+//       { transaction }
+//     );
+
+//     // Fetch all subjects for the curriculum
+//     const curriculumSubjects = await CurriculumSubject.findAll({
+//       where: { curriculumId },
+//       include: {
+//         model: Subject,
+//         as: "subject", // Match the alias defined in associations
+//       },
+//       transaction,
+//     });
+
+//     //console.log("curriculumSubjects: ", curriculumSubjects);
+
+//     // Check for missing subjects
+//     const invalidSubjects = curriculumSubjects.filter((cs) => !cs.subject);
+//     if (invalidSubjects.length) {
+//       await transaction.rollback(); // Rollback if invalid subjects are found
+//       console.error("Invalid subjects found:", invalidSubjects);
+//       return res
+//         .status(400)
+//         .send("Some curriculum subjects do not have valid linked subjects.");
+//     }
+
+//     // Map subjects into ClassToSubjects
+//     const classSubjects = curriculumSubjects.map((curriculumSubject) => ({
+//       classId: classInstance.id,
+//       subjectId: curriculumSubject.subject?.id, // Ensure valid subjectId
+//     }));
+
+//     // Validate that all subjects exist in the database
+//     if (classSubjects.some((cs) => !cs.subjectId)) {
+//       await transaction.rollback(); // Rollback if invalid subject data is found
+//       return res.status(400).send("Invalid subject data in curriculum");
+//     }
+
+//     // Bulk create records in ClassToSubjects
+//     await ClassToSubjects.bulkCreate(classSubjects, { transaction });
+
+//     // Commit the transaction if everything succeeds
+//     await transaction.commit();
+
+//     res.status(200).json({
+//       message: "Class added to curriculum",
+//       class: classInstance,
+//       createdNewClass: created,
+//       subjects: curriculumSubjects,
+//     });
+//   } catch (error) {
+//     console.error("Error adding class to curriculum:", error);
+//     await transaction.rollback(); // Rollback the transaction on error
+//     res.status(500).send("Error adding class to curriculum");
+//   }
+// };
+
+// Remove a class from a curriculum
+
+// export const addClassToCurriculum = async (req, res) => {
+//   const { curriculumId } = req.params;
+//   const { className, years } = req.body;
+
+//   console.log("curr class to be added: ", req.body, "  currId: ", curriculumId);
+
+//   const transaction = await sequelize.transaction(); // Start a transaction
+
+//   try {
+//     const curriculum = await Curriculum.findByPk(curriculumId, { transaction });
+
+//     if (!curriculum) {
+//       await transaction.rollback(); // Rollback if curriculum is not found
+//       return res.status(404).send("Curriculum not found");
+//     }
+
+//     // Create or find the class by name
+//     const [classInstance, created] = await Class.findOrCreate({
+//       where: { name: className },
+//       defaults: { years },
+//       transaction,
+//     });
+
+//     // Check if the association already exists
+//     const existingAssociation = await CurriculumToClasses.findOne({
+//       where: {
+//         curriculumId,
+//         classId: classInstance.id,
+//       },
+//       transaction,
+//     });
+
+//     if (existingAssociation) {
+//       await transaction.rollback(); // Rollback if association already exists
+//       return res
+//         .status(400)
+//         .send("Class is already associated with this curriculum");
+//     }
+
+//     // Create the association between the class and the curriculum
+//     await CurriculumToClasses.create(
+//       {
+//         curriculumId,
+//         classId: classInstance.id,
+//       },
+//       { transaction }
+//     );
+
+//     // Fetch all subjects for the curriculum
+//     const curriculumSubjects = await CurriculumSubject.findAll({
+//       where: { curriculumId },
+//       include: {
+//         model: Subject,
+//         as: "subject", // Match the alias defined in associations
+//       },
+//       transaction,
+//     });
+
+//     // Check for missing subjects
+//     const invalidSubjects = curriculumSubjects.filter((cs) => !cs.subject);
+//     if (invalidSubjects.length) {
+//       await transaction.rollback(); // Rollback if invalid subjects are found
+//       console.error("Invalid subjects found:", invalidSubjects);
+//       return res
+//         .status(400)
+//         .send("Some curriculum subjects do not have valid linked subjects.");
+//     }
+
+//     // Map subjects into ClassToSubjects
+//     const classSubjects = curriculumSubjects.map((curriculumSubject) => ({
+//       classId: classInstance.id,
+//       subjectId: curriculumSubject.subject?.id, // Ensure valid subjectId
+//     }));
+
+//     // Validate that all subjects exist in the database
+//     if (classSubjects.some((cs) => !cs.subjectId)) {
+//       await transaction.rollback(); // Rollback if invalid subject data is found
+//       return res.status(400).send("Invalid subject data in curriculum");
+//     }
+
+//     // Bulk create records in ClassToSubjects
+//     await ClassToSubjects.bulkCreate(classSubjects, { transaction });
+
+//     // Update the class_id for each subject linked to the curriculum
+//     const subjectIds = curriculumSubjects.map((cs) => cs.subject?.id); // Extract valid subject IDs
+//     await Subject.update(
+//       { class_id: classInstance.id }, // Set the class_id for all subjects
+//       {
+//         where: {
+//           id: subjectIds, // Match subjects by their IDs
+//         },
+//         transaction,
+//       }
+//     );
+
+//     // Commit the transaction if everything succeeds
+//     await transaction.commit();
+
+//     res.status(200).json({
+//       message: "Class added to curriculum",
+//       class: classInstance,
+//       createdNewClass: created,
+//       subjects: curriculumSubjects,
+//     });
+//   } catch (error) {
+//     console.error("Error adding class to curriculum:", error);
+//     await transaction.rollback(); // Rollback the transaction on error
+//     res.status(500).send("Error adding class to curriculum");
+//   }
+// };
+
+export const getSubjectsByClass = async (req, res) => {
+  const { curriculumId, classId } = req.params;
+  console.log("class subjects req.params: ", req.params);
+
+  try {
+    // Check if the curriculum exists
+    const curriculum = await Curriculum.findByPk(curriculumId);
+    if (!curriculum) {
+      return res.status(404).send("Curriculum not found");
+    }
+
+    if (!classId || classId === "undefined") {
+      return res.status(404).send("Class not available");
+    }
+
+    // Fetch all subjects already linked to the class in ClassToSubjects
+    const classSubjects = await ClassToSubjects.findAll({
+      where: { classId }, // Directly filter by classId
+      include: [
+        {
+          model: Subject, // Assuming Subject is associated with ClassToSubjects
+          where: { isArchive: false }, // Filter by truthy isArchive field
+          include: [
+            {
+              model: StudyArea, // Assuming StudyArea is associated with Subject
+              as: "studyarea",
+              attributes: ["id", "name"], // Include specific fields of StudyArea
+            },
+          ],
+          attributes: ["id", "name", "class_id", "isArchive"], // Include specific fields of Subject
+        },
+      ],
+    });
+
+    // Format the response
+    const formattedSubjects = classSubjects.map((classSubject) => {
+      const subject = classSubject.Subject;
+      return {
+        id: subject.id,
+        name: subject.name,
+        studyArea: subject.studyarea?.name || "Unknown",
+        classId: subject.class_id, // Include classId for context
+        isArchive: subject.isArchive, // Include isArchive for clarity
+      };
+    });
+
+    res.status(200).json({ subjects: formattedSubjects });
+  } catch (err) {
+    console.error("Error fetching subjects for the class:", err);
+    res.status(500).send("Error fetching subjects for the class");
+  }
+};
 
 export const addClassToCurriculum = async (req, res) => {
   const { curriculumId } = req.params;
@@ -362,8 +630,6 @@ export const addClassToCurriculum = async (req, res) => {
       transaction,
     });
 
-    //console.log("curriculumSubjects: ", curriculumSubjects);
-
     // Check for missing subjects
     const invalidSubjects = curriculumSubjects.filter((cs) => !cs.subject);
     if (invalidSubjects.length) {
@@ -374,10 +640,32 @@ export const addClassToCurriculum = async (req, res) => {
         .send("Some curriculum subjects do not have valid linked subjects.");
     }
 
-    // Map subjects into ClassToSubjects
-    const classSubjects = curriculumSubjects.map((curriculumSubject) => ({
+    // Duplicate subjects for the new class
+    const newSubjects = await Promise.all(
+      curriculumSubjects.map(async (curriculumSubject) => {
+        const originalSubject = curriculumSubject.subject;
+        if (!originalSubject) return null;
+
+        // Create a new subject with the same study area and updated name
+        const duplicatedSubject = await Subject.create(
+          {
+            name: `${originalSubject.name}_${classInstance.name}`, // Add class initials to subject name
+            description: originalSubject.description,
+            curriculumId, // Associate with the same curriculum
+            class_id: classInstance.id, // Associate with the new class
+            studyareaid: originalSubject.studyareaid, // Maintain the same study area
+          },
+          { transaction }
+        );
+
+        return duplicatedSubject;
+      })
+    );
+
+    // Step 5: Link new subjects to the class using ClassToSubjects
+    const classSubjects = newSubjects.map((subject) => ({
       classId: classInstance.id,
-      subjectId: curriculumSubject.subject?.id, // Ensure valid subjectId
+      subjectId: subject.id, // Use the ID of the newly created subject
     }));
 
     // Validate that all subjects exist in the database
@@ -393,10 +681,10 @@ export const addClassToCurriculum = async (req, res) => {
     await transaction.commit();
 
     res.status(200).json({
-      message: "Class added to curriculum",
+      message: "Class added to curriculum with unique subjects",
       class: classInstance,
       createdNewClass: created,
-      subjects: curriculumSubjects,
+      subjects: newSubjects,
     });
   } catch (error) {
     console.error("Error adding class to curriculum:", error);
@@ -405,7 +693,6 @@ export const addClassToCurriculum = async (req, res) => {
   }
 };
 
-// Remove a class from a curriculum
 export const deleteClassFromCurriculum = async (req, res) => {
   const { curriculumId, classId } = req.params;
 
