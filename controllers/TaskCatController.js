@@ -1,12 +1,19 @@
 import TaskCategory from "../models/TaskCategory.js";
+import School from "../models/School.js";
 
 // Create a new task category
 export const createTaskCategory = async (req, res) => {
+  const { schoolId } = req.params;
   const { name, desc } = req.body;
 
   try {
-    const taskCategory = await TaskCategory.create({ name, desc });
-    res.status(201).json({ taskCategory });
+    const school = await School.findOne({ where: { specialId: schoolId } });
+    if (school) {
+      const taskCategory = await TaskCategory.create({ name, desc, schoolId });
+      res.status(201).json({ taskCategory });
+    } else {
+      res.status(401).json({ message: "School doesn't exist!" });
+    }
   } catch (error) {
     console.error("Error creating task category:", error);
     res.status(500).json({ error: "Failed to create task category." });
@@ -15,8 +22,9 @@ export const createTaskCategory = async (req, res) => {
 
 // Get all task categories
 export const getAllTaskCategories = async (req, res) => {
+  const { schoolId } = req.params;
   try {
-    const taskCategories = await TaskCategory.findAll();
+    const taskCategories = await TaskCategory.findAll({ where: { schoolId } });
     res.status(200).json({ taskCategories });
   } catch (error) {
     console.error("Error fetching task categories:", error);

@@ -10,10 +10,10 @@ import {
 const router = express.Router();
 
 // Create a new task category
-router.post("/", createTaskCategory);
+router.post("/:schoolId", createTaskCategory);
 
 // Get all task categories
-router.get("/", getAllTaskCategories);
+router.get("/:schoolId", getAllTaskCategories);
 
 // Get a single task category by ID
 router.get("/:id", getTaskCategoryById);

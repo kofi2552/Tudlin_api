@@ -44,7 +44,7 @@ export const createAssessment = async (req, res) => {
     }
     res.status(201).json({
       message: "Assessment created successfully",
-      data: newAssessment,
+      assessment: newAssessment,
     });
   } catch (err) {
     res

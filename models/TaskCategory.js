@@ -7,6 +7,10 @@ const TaskCategory = sequelize.define(
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     name: { type: DataTypes.STRING, allowNull: false },
     desc: { type: DataTypes.STRING, allowNull: true },
+    schoolId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
   },
   {
     timestamps: true,
