@@ -60,7 +60,16 @@ export const getAllAssessmentByUser = async (req, res) => {
   try {
     const assessments = await Assessment.findAll({
       where: { userId },
-      include: [{ model: TaskCategory, attributes: ["name", "desc"] }],
+      include: [
+        {
+          model: TaskCategory,
+          attributes: ["name"],
+        },
+        {
+          model: Subject, // Include the subject here
+          attributes: ["name"], // Get the subject name
+        },
+      ],
     });
 
     res.status(200).json(assessments);
@@ -71,13 +80,21 @@ export const getAllAssessmentByUser = async (req, res) => {
   }
 };
 
-// Get All Assessments
+// Get All Assessments for a student
 export const getAllAssessmentByStudent = async (req, res) => {
   const { studentId } = req.params;
-  console.log("stduent assesment to fetch: ", studentId);
+  console.log("student assesment to fetch: ", studentId);
   try {
     // Check if the student exists
-    const student = await Student.findByPk(studentId);
+    const student = await Student.findByPk(studentId, {
+      include: [
+        {
+          model: Class,
+          as: "class", // Include class information
+          attributes: ["name"], // Fetch class name
+        },
+      ],
+    });
     if (!student) {
       return res.status(404).json({ error: "Student not found" });
     }
@@ -98,10 +115,14 @@ export const getAllAssessmentByStudent = async (req, res) => {
           model: Subject,
           attributes: ["name"],
         },
+        {
+          model: Class,
+          attributes: ["name"],
+        },
       ],
     });
 
-    res.status(200).json({ assessments });
+    res.status(200).json({ assessments, class: student });
   } catch (error) {
     console.error("Error fetching assessments for student:", error);
     res.status(500).json({

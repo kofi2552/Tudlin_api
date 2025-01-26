@@ -822,6 +822,110 @@ export const addClassToCurriculum = async (req, res) => {
   }
 };
 
+export const addSubjectToClass = async (req, res) => {
+  const { curriculumId, classId } = req.params;
+  const { subjectId } = req.body;
+
+  console.log("Duplicate subject request received: ", {
+    curriculumId,
+    classId,
+    subjectId,
+  });
+
+  const transaction = await sequelize.transaction(); // Start a transaction
+
+  try {
+    // Fetch the curriculum
+    const curriculum = await Curriculum.findByPk(curriculumId, { transaction });
+    if (!curriculum) {
+      await transaction.rollback(); // Rollback if curriculum is not found
+      return res.status(404).send("Curriculum not found");
+    }
+
+    // Check if the subject is part of the curriculum in the CurriculumSubject table
+    const curriculumSubject = await CurriculumSubject.findOne({
+      where: { curriculumId, subjectId },
+      transaction,
+    });
+    if (!curriculumSubject) {
+      await transaction.rollback(); // Rollback if subject is not linked to the curriculum
+      return res
+        .status(404)
+        .send("Subject is not associated with the specified curriculum");
+    }
+
+    // Fetch the class
+    const classInstance = await Class.findByPk(classId, { transaction });
+    if (!classInstance) {
+      await transaction.rollback(); // Rollback if class is not found
+      return res.status(404).send("Class not found");
+    }
+
+    // Fetch the subject to duplicate
+    const originalSubject = await Subject.findByPk(subjectId, { transaction });
+    if (!originalSubject) {
+      await transaction.rollback(); // Rollback if subject is not found
+      return res.status(404).send("Subject not found");
+    }
+
+    // if (originalSubject) {
+    //   await Subject.update(
+    //     { class_id: classInstance.id },
+    //     { where: { class_id: classId } }
+    //   );
+    // }
+
+    // Check if the subject is already associated with the class
+    const existingAssociation = await ClassToSubjects.findOne({
+      where: {
+        classId,
+        subjectId,
+      },
+      transaction,
+    });
+
+    if (existingAssociation) {
+      await transaction.rollback(); // Rollback if association already exists
+      return res
+        .status(400)
+        .send("Subject is already associated with this class");
+    }
+
+    // Duplicate the subject for the class
+    const duplicatedSubject = await Subject.create(
+      {
+        name: `${originalSubject.name}_${classInstance.name}`, // Add class initials to subject name
+        description: originalSubject.description,
+        curriculumId, // Associate with the same curriculum
+        class_id: classId, // Associate with the specified class
+        studyareaid: originalSubject.studyareaid, // Maintain the same study area
+      },
+      { transaction }
+    );
+
+    // Link the new subject to the class in ClassToSubjects
+    await ClassToSubjects.create(
+      {
+        classId,
+        subjectId: duplicatedSubject.id, // Link the duplicated subject
+      },
+      { transaction }
+    );
+
+    // Commit the transaction
+    await transaction.commit();
+
+    res.status(200).json({
+      message: "Subject duplicated successfully for the class",
+      duplicatedSubject,
+    });
+  } catch (error) {
+    console.error("Error duplicating subject to class:", error);
+    await transaction.rollback(); // Rollback the transaction on error
+    res.status(500).send("Error duplicating subject to class");
+  }
+};
+
 export const deleteClassFromCurriculum = async (req, res) => {
   const { curriculumId, classId } = req.params;
 

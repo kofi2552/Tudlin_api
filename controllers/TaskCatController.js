@@ -23,6 +23,7 @@ export const createTaskCategory = async (req, res) => {
 // Get all task categories
 export const getAllTaskCategories = async (req, res) => {
   const { schoolId } = req.params;
+  console.log("task category for school id: ", schoolId);
   try {
     const taskCategories = await TaskCategory.findAll({ where: { schoolId } });
     res.status(200).json({ taskCategories });

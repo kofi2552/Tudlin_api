@@ -172,7 +172,7 @@ export const getStudentSubjects = async (req, res) => {
 export const getSubjectStudents = async (req, res) => {
   try {
     const { subjectId } = req.params;
-    console.log("get sub-stub data received from front: ", subjectId);
+    console.log("get students for subejct id: ", subjectId);
 
     // Fetch the subject with its associated students
     const subject = await Subject.findByPk(subjectId, {

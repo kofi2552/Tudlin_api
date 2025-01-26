@@ -3,15 +3,19 @@ import School from "../models/School.js";
 
 // Create a new student
 export const createStudent = async (req, res) => {
+  const { schoolId } = req.params;
   const { curriculum_id, classG, name, email } = req.body;
 
+  console.log("new student with sch id: ", schoolId);
   console.log("new student to be added: ", req.body);
+
   try {
     const newStudent = await Student.create({
       class_id: classG,
       curriculum_id,
       name,
       email,
+      schoolId,
     });
 
     res
@@ -36,9 +40,23 @@ export const getAllStudents = async (req, res) => {
   }
 };
 
+export const getAllStudentsBySchool = async (req, res) => {
+  const { schoolId } = req.params;
+  console.log("fetching all students with sch id: ", schoolId);
+  try {
+    const students = await Student.findAll({ where: { schoolId } });
+    res.status(200).json({ students });
+  } catch (error) {
+    console.error("Error fetching students:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to fetch students. Please try again." });
+  }
+};
+
 // Fetch all students in a specific class
 export const getStudentsByClass = async (req, res) => {
-  const { classId } = req.params; // Get classId from the route parameters
+  const { classId } = req.params;
   console.log("student class id: ", classId);
   try {
     // Fetch students where class_id matches the provided classId

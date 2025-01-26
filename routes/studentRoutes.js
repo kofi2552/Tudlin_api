@@ -7,6 +7,7 @@ import {
   getAllStudents,
   getStudentById,
   getStudentByEmail,
+  getAllStudentsBySchool,
   updateStudent,
   deleteStudent,
   getStudentsByClass,
@@ -14,13 +15,14 @@ import {
 
 const router = express.Router();
 
-// POST route to create a new school
-router.post("/add", createStudent);
+// POST route to create a new student
+router.post("/add/:schoolId", createStudent);
 router.post("/verify", getStudentByEmail);
 router.get("/all", getAllStudents);
+router.get("/all/:schoolId", getAllStudentsBySchool);
 router.get("/class/:classId", getStudentsByClass);
 router.get("/:id", getStudentById);
-router.put("/:id", verifyToken, updateStudent);
-router.delete("/del/:id", verifyToken, deleteStudent);
+router.put("/:id", updateStudent);
+router.delete("/del/:id", deleteStudent);
 
 export default router;

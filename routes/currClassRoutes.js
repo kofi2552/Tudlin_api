@@ -6,6 +6,7 @@ import {
   addClassToCurriculum,
   getClassesByCurriculum,
   getSubjectsByClass,
+  addSubjectToClass,
   deleteClassFromCurriculum,
   updateClassInCurriculum,
 } from "../controllers/CurrClassController.js";
@@ -26,6 +27,8 @@ router.get("/:curriculumId/:classId/subjects", getSubjectsByClass);
 
 // Add a subject to a curriculum
 router.post("/:curriculumId/class", addClassToCurriculum);
+
+router.post("/:curriculumId/dup-subject/:classId", addSubjectToClass);
 
 // // Delete a subject
 router.delete("/:curriculumId/class/:classId", deleteClassFromCurriculum);
