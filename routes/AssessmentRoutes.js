@@ -5,6 +5,7 @@ import {
   getAssessmentById,
   getAllAssessmentByUser,
   getAllAssessmentByStudent,
+  getAllAssessmentForStudent,
   updateAssessment,
   deleteAssessment,
   getScoresByAssessment,
@@ -20,6 +21,7 @@ const router = express.Router();
 router.post("/add/:userId/:schoolId", createAssessment);
 router.get("/:userId", getAllAssessmentByUser);
 router.get("/student/:studentId", getAllAssessmentByStudent);
+router.get("/student/all/:studentId", getAllAssessmentForStudent);
 router.get("/all", getAllAssessments);
 router.get("/task/:id", getAssessmentById);
 router.put("/edit/:id", updateAssessment);

@@ -83,7 +83,7 @@ export const getAllAssessmentByUser = async (req, res) => {
 // Get All Assessments for a student
 export const getAllAssessmentByStudent = async (req, res) => {
   const { studentId } = req.params;
-  console.log("student assesment to fetch: ", studentId);
+  console.log("fetch assesments for student id: ", studentId);
   try {
     // Check if the student exists
     const student = await Student.findByPk(studentId, {
@@ -123,6 +123,50 @@ export const getAllAssessmentByStudent = async (req, res) => {
     });
 
     res.status(200).json({ assessments, class: student });
+  } catch (error) {
+    console.error("Error fetching assessments for student:", error);
+    res.status(500).json({
+      error: "Failed to fetch student assessments",
+      details: error.message,
+    });
+  }
+};
+
+export const getAllAssessmentForStudent = async (req, res) => {
+  const { studentId } = req.params;
+  console.log("fetch assesments for student id: ", studentId);
+  try {
+    // Check if the student exists
+    const student = await Student.findByPk(studentId);
+    if (!student) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+
+    // Fetch assessments and their scores for the student
+    const assessments = await Assessment.findAll({
+      include: [
+        {
+          model: StudentAssessmentScore,
+          required: false,
+          attributes: ["score", "max_score"],
+          where: { student_id: studentId },
+        },
+        {
+          model: TaskCategory,
+          attributes: ["name", "desc"],
+        },
+        {
+          model: Subject,
+          attributes: ["name"],
+        },
+        {
+          model: Class,
+          attributes: ["name"],
+        },
+      ],
+    });
+
+    res.status(200).json({ assessments });
   } catch (error) {
     console.error("Error fetching assessments for student:", error);
     res.status(500).json({
