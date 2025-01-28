@@ -14,6 +14,7 @@ import {
   deleteCurriculumSubject,
   editCurriculumSubject,
   updateCurrDivision,
+  getAllCurriculaBySchool,
   unarchiveSubject,
 } from "../controllers/curriculumController.js";
 
@@ -24,6 +25,8 @@ router.get("/:divisionId/curr", getCurriculumsByDivision);
 
 // Get all curriculums
 router.get("/all", getCurriculums);
+
+router.get("/all/:schoolId", getAllCurriculaBySchool);
 
 router.get("/cd/:schoolId", getAllCurriculumDivisionsBySchool);
 

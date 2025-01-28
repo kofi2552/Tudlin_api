@@ -4,6 +4,7 @@ import CurriculumSubject from "../models/CurriculumSubject.js";
 import StudyAreas from "../models/StudyAreas.js";
 import CurrDivision from "../models/CurrDivision.js";
 import CurriculumToDivision from "../models/CurriculumToDivision.js";
+import School from "../models/School.js";
 import sequelize from "../database.js";
 
 export const getCurriculums = async (req, res) => {
@@ -31,6 +32,57 @@ export const getAllCurriculumDivisionsBySchool = async (req, res) => {
   } catch (error) {
     console.error("Error fetching curriculum divisions:", error);
     res.status(500).json({ message: "Error fetching division's curriculums." });
+  }
+};
+
+export const getAllCurriculaBySchool = async (req, res) => {
+  const { schoolId } = req.params;
+
+  console.log("Fetching curricula for school ID:", schoolId);
+
+  try {
+    const school = await School.findOne({ where: { specialId: schoolId } });
+
+    if (!school) {
+      return res.status(401).json({ message: "No School Found with this id." });
+    }
+
+    // Step 1: Fetch all divisions for the given school
+    const divisions = await CurrDivision.findAll({
+      where: { specialId: schoolId },
+      attributes: ["id"], // Fetch only division IDs
+    });
+
+    // Step 2: Extract division IDs
+    const divisionIds = divisions.map((division) => division.id);
+
+    if (divisionIds.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No Curriculum divisions found." });
+    }
+
+    // Step 3: Fetch curriculums associated with these divisions
+    const curriculums = await Curriculum.findAll({
+      include: [
+        {
+          model: CurrDivision,
+          through: { attributes: [] }, // Ignore join table data
+          where: { id: divisionIds }, // Filter by division IDs
+          attributes: [], // Ignore division attributes
+        },
+      ],
+      attributes: ["id", "name"], // Fetch only required curriculum fields
+    });
+
+    // Step 4: Return the fetched curriculums
+    res.status(200).json({ curriculums });
+  } catch (error) {
+    console.error("Error fetching curriculums for school:", error);
+    res.status(500).json({
+      error: "Failed to fetch curriculums for the school",
+      details: error.message,
+    });
   }
 };
 
