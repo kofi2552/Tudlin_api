@@ -8,6 +8,7 @@ import {
   getStudentById,
   getStudentByEmail,
   getAllStudentsBySchool,
+  getStudentsByTeacher,
   updateStudent,
   deleteStudent,
   getStudentsByClass,
@@ -19,6 +20,7 @@ const router = express.Router();
 router.post("/add/:schoolId", createStudent);
 router.post("/verify", getStudentByEmail);
 router.get("/all", getAllStudents);
+router.get("/tutor/:teacherId", getStudentsByTeacher);
 router.get("/all/:schoolId", getAllStudentsBySchool);
 router.get("/class/:classId", getStudentsByClass);
 router.get("/:id", getStudentById);

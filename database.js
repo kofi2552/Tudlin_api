@@ -22,6 +22,7 @@ const sequelize = new Sequelize(process.env.DB_URI, {
 });
 
 // Test connection
+
 sequelize
   .authenticate()
   .then(() => console.log("Database connected"))

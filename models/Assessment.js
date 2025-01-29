@@ -11,6 +11,7 @@ const Assessment = sequelize.define(
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     name: { type: DataTypes.STRING, allowNull: false }, // Name of the assessment (e.g., "Midterm Exam")
     tscore: { type: DataTypes.INTEGER, allowNull: false },
+    content: { type: DataTypes.STRING, allowNull: true },
     task_category_id: {
       type: DataTypes.INTEGER,
       allowNull: false,

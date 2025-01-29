@@ -11,7 +11,7 @@ import { Op } from "sequelize";
 export const createAssessment = async (req, res) => {
   const { userId, schoolId } = req.params;
   const { values, class_id, curriculum_id } = req.body;
-  const { name, tscore, task_category_id, subject_id } = values;
+  const { name, tscore, content, task_category_id, subject_id } = values;
 
   console.log("create task details recived: ", req.body, values, req.params);
 
@@ -34,6 +34,7 @@ export const createAssessment = async (req, res) => {
       task_category_id,
       class_id,
       subject_id,
+      content,
       curriculum_id,
       schoolId: school.specialId,
       userId: user.id || userId,
@@ -195,7 +196,15 @@ export const getAssessmentById = async (req, res) => {
   try {
     const { id } = req.params;
     console.log("Assessment id recieved: ", id);
-    const assessment = await Assessment.findByPk(id);
+    const assessment = await Assessment.findOne({
+      where: { id },
+      include: [
+        {
+          model: Subject, // Include the subject here
+          attributes: ["name"], // Get the subject name
+        },
+      ],
+    });
 
     if (!assessment) {
       return res.status(404).json({ error: "Assessment not found" });

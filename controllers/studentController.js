@@ -1,5 +1,7 @@
 import { Student, Class, Curriculum } from "../models/associations.js";
 import School from "../models/School.js";
+import UserClassSubject from "../models/UserClassSubject.js";
+import User from "../models/User.js";
 
 // Create a new student
 export const createStudent = async (req, res) => {
@@ -10,6 +12,12 @@ export const createStudent = async (req, res) => {
   console.log("new student to be added: ", req.body);
 
   try {
+    const student = Student.findOne({ where: { email } });
+
+    if (student) {
+      return res.status(401).json({ message: "Oops! student already exists" });
+    }
+
     const newStudent = await Student.create({
       class_id: classG,
       curriculum_id,
@@ -24,6 +32,54 @@ export const createStudent = async (req, res) => {
   } catch (error) {
     console.error("Error creating student:", error);
     res.status(500).json({ error: "Failed to add student. Please try again." });
+  }
+};
+
+//Fetch teacher's students
+export const getStudentsByTeacher = async (req, res) => {
+  const { teacherId } = req.params;
+  console.log("Fetching students for tutor with ID:", teacherId);
+
+  try {
+    // Find the tutor
+    const tutor = await User.findByPk(teacherId);
+
+    if (!tutor) {
+      return res.status(404).json({ error: "Tutor not found." });
+    }
+
+    // If tutor is an admin, return all students
+    if (tutor.isAdmin) {
+      const allStudents = await Student.findAll();
+      return res.status(200).json({ students: allStudents });
+    }
+
+    // Find all class IDs where the teacher is assigned
+    const teacherClasses = await UserClassSubject.findAll({
+      where: { userId: teacherId },
+      attributes: ["classId"],
+    });
+
+    // Extract class IDs
+    const classIds = teacherClasses.map((tc) => tc.classId);
+
+    if (classIds.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "No classes found for this teacher." });
+    }
+
+    // Fetch students who belong to these classes
+    const students = await Student.findAll({
+      where: { class_id: classIds },
+    });
+
+    res.status(200).json({ students });
+  } catch (error) {
+    console.error("Error fetching students for teacher:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to fetch students. Please try again." });
   }
 };
 
@@ -89,7 +145,7 @@ export const getStudentsByClass = async (req, res) => {
 // Fetch a single student by ID
 export const getStudentByEmail = async (req, res) => {
   const { email } = req.body;
-  console.log("recieved email: ", email, req.body);
+  console.log("recieved student email: ", email, req.body);
   try {
     const student = await Student.findOne({
       where: { email },
@@ -107,6 +163,7 @@ export const getStudentByEmail = async (req, res) => {
     });
 
     if (!student) {
+      console.log("Student not found!");
       return res.status(404).json({ error: "Student not found" });
     }
 

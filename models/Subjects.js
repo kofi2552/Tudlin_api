@@ -6,6 +6,7 @@ const Subject = sequelize.define(
   {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     name: { type: DataTypes.STRING, allowNull: false },
+    content: { type: DataTypes.STRING, allowNull: true },
     studyareaid: {
       type: DataTypes.INTEGER, // Changed from STRING to INTEGER
       allowNull: true,
