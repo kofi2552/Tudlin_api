@@ -1,6 +1,7 @@
 import express from "express";
 import {
-  createAssessment,
+  createTaskAssessment,
+  createQuizAssessment,
   getAllAssessments,
   getAssessmentById,
   getAllAssessmentByUser,
@@ -13,12 +14,19 @@ import {
   getFilteredAssessments,
   addScores,
   updateScore,
+  getQuizzesByAssessment,
+  getQuizAttempts,
   deleteScore,
+  completeQuiz,
 } from "../controllers/AssessmentController.js";
 
 const router = express.Router();
 
-router.post("/add/:userId/:schoolId", createAssessment);
+router.post("/task/add/:userId/:schoolId", createTaskAssessment);
+router.post("/quiz/add/:userId/:schoolId", createQuizAssessment);
+router.get("/quizzes/:assessmentId", getQuizzesByAssessment);
+router.get("/quizzes/attempt/:assessmentId", getQuizAttempts);
+router.post("/quiz/finish/:assessmentId", completeQuiz);
 router.get("/:userId", getAllAssessmentByUser);
 router.get("/student/:studentId", getAllAssessmentByStudent);
 router.get("/student/all/:studentId", getAllAssessmentForStudent);

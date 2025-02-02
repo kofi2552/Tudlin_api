@@ -4,14 +4,21 @@ import TaskCategory from "./TaskCategory.js";
 import Student from "./Student.js";
 import Subject from "./Subjects.js";
 import Class from "./Class.js";
+import Quiz from "./Quiz.js";
 
 const Assessment = sequelize.define(
   "Assessment",
   {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    name: { type: DataTypes.STRING, allowNull: false }, // Name of the assessment (e.g., "Midterm Exam")
+    name: { type: DataTypes.STRING, allowNull: false },
+    desc: { type: DataTypes.STRING, allowNull: true },
     tscore: { type: DataTypes.INTEGER, allowNull: false },
     content: { type: DataTypes.STRING, allowNull: true },
+    duration: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 }, // Time limit in minutes
+    timedQuizId: {
+      type: DataTypes.JSON, // Stores an array of quiz IDs
+      allowNull: true,
+    },
     task_category_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -40,6 +47,26 @@ const Assessment = sequelize.define(
     userId: {
       type: DataTypes.INTEGER,
       allowNull: true,
+    },
+    isDeadline: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false, // False means no deadline
+    },
+    isQuiz: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false, // False means no deadline
+    },
+    quizAttempts: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 0, // Tracks how many times a user has attempted this quiz
+    },
+    deadlineDateTime: {
+      type: DataTypes.DATE,
+      allowNull: true, // If null, no deadline is set
+      validate: {
+        isDate: true,
+      },
     },
   },
   {
@@ -93,5 +120,8 @@ Assessment.belongsTo(Subject, {
 });
 
 Assessment.belongsTo(Class, { foreignKey: "class_id" });
+
+Assessment.belongsToMany(Quiz, { through: "AssessmentQuiz" });
+Quiz.belongsToMany(Assessment, { through: "AssessmentQuiz" });
 
 export { Assessment, StudentAssessmentScore };
