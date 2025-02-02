@@ -12,7 +12,7 @@ export const createStudent = async (req, res) => {
   console.log("new student to be added: ", req.body);
 
   try {
-    const student = Student.findOne({ where: { email } });
+    const student = await Student.findOne({ where: { email } });
 
     if (student) {
       return res.status(401).json({ message: "Oops! student already exists" });
