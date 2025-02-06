@@ -21,8 +21,6 @@ const sequelize = new Sequelize(process.env.DB_URI, {
   logging: console.log,
 });
 
-// Test connection
-
 sequelize
   .authenticate()
   .then(() => console.log("Database connected"))

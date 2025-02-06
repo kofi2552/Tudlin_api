@@ -44,6 +44,10 @@ const Assessment = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    taskLink: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     userId: {
       type: DataTypes.INTEGER,
       allowNull: true,

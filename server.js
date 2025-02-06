@@ -35,6 +35,7 @@ app.use(
   cors({
     origin: [
       "https://tudlin-client.onrender.com",
+      "https://api.openweathermap.org",
       "https://www.tudlin.com",
       "http://localhost:5173",
     ],
