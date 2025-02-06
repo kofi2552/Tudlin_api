@@ -440,22 +440,82 @@ export const getAllAssessmentByStudent = async (req, res) => {
   }
 };
 
+// export const getAllAssessmentForStudent = async (req, res) => {
+//   const { studentId } = req.params;
+//   console.log("fetch assesments for student id: ", studentId);
+//   try {
+//     // Check if the student exists
+//     const student = await Student.findByPk(studentId);
+//     if (!student) {
+//       return res.status(404).json({ error: "Student not found" });
+//     }
+
+//     // Fetch assessments and their scores for the student
+//     const assessments = await Assessment.findAll({
+//       include: [
+//         {
+//           model: StudentAssessmentScore,
+//           required: false,
+//           attributes: ["score", "max_score"],
+//           where: { student_id: studentId },
+//         },
+//         {
+//           model: TaskCategory,
+//           attributes: ["name", "desc"],
+//         },
+//         {
+//           model: Subject,
+//           attributes: ["name"],
+//         },
+//         {
+//           model: Class,
+//           attributes: ["name"],
+//         },
+//       ],
+//     });
+
+//     res.status(200).json({ assessments });
+//   } catch (error) {
+//     console.error("Error fetching assessments for student:", error);
+//     res.status(500).json({
+//       error: "Failed to fetch student assessments",
+//       details: error.message,
+//     });
+//   }
+// };
+
 export const getAllAssessmentForStudent = async (req, res) => {
   const { studentId } = req.params;
-  console.log("fetch assesments for student id: ", studentId);
+  console.log("Fetching assessments for student id:", studentId);
   try {
-    // Check if the student exists
-    const student = await Student.findByPk(studentId);
+    // 1. Find the student along with the subjects they offer
+    const student = await Student.findByPk(studentId, {
+      include: [
+        {
+          model: Subject,
+          as: "Subjects",
+          attributes: ["id"],
+          through: { attributes: [] }, // exclude data from join table
+        },
+      ],
+    });
     if (!student) {
       return res.status(404).json({ error: "Student not found" });
     }
 
-    // Fetch assessments and their scores for the student
+    // 2. Extract the subject IDs associated with this student
+    const subjectIds = student.Subjects.map((subject) => subject.id);
+
+    // 3. Fetch assessments that match the student's class and have a subject in the student's subjects list
     const assessments = await Assessment.findAll({
+      where: {
+        class_id: student.class_id,
+        subject_id: subjectIds, // Sequelize will automatically interpret this as "subject_id IN ( ... )"
+      },
       include: [
         {
           model: StudentAssessmentScore,
-          required: false,
+          required: false, // Include score info if available; otherwise, it'll be null
           attributes: ["score", "max_score"],
           where: { student_id: studentId },
         },
@@ -507,8 +567,22 @@ export const getAssessmentById = async (req, res) => {
       where: { id },
       include: [
         {
-          model: Subject, // Include the subject here
-          attributes: ["name"], // Get the subject name
+          model: StudentAssessmentScore,
+          required: false, // Include score info if available; otherwise, it'll be null
+          attributes: ["score"],
+          where: { assessment_id: id },
+        },
+        {
+          model: TaskCategory,
+          attributes: ["name", "desc"],
+        },
+        {
+          model: Subject,
+          attributes: ["name"],
+        },
+        {
+          model: Class,
+          attributes: ["name"],
         },
       ],
     });

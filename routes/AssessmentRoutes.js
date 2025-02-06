@@ -28,8 +28,8 @@ router.get("/quizzes/:assessmentId", getQuizzesByAssessment);
 router.get("/quizzes/attempt/:assessmentId", getQuizAttempts);
 router.post("/quiz/finish/:assessmentId", completeQuiz);
 router.get("/:userId", getAllAssessmentByUser);
-router.get("/student/:studentId", getAllAssessmentByStudent);
-router.get("/student/all/:studentId", getAllAssessmentForStudent);
+router.get("/student/:studentId", getAllAssessmentByStudent); //for tracking student progress
+router.get("/student/all/:studentId", getAllAssessmentForStudent); //for student dashboard
 router.get("/all", getAllAssessments);
 router.get("/task/:id", getAssessmentById);
 router.put("/edit/:id", updateAssessment);
