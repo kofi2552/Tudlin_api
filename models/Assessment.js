@@ -99,7 +99,16 @@ const StudentAssessmentScore = sequelize.define(
       type: DataTypes.FLOAT,
       allowNull: false,
       defaultValue: 100,
-    }, // Maximum possible score for this assessment
+    },
+    attempts: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 0, // Tracks how many times a user has attempted this quiz
+    },
+    isComplete: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false, // Tracks how many times a user has attempted this quiz
+    },
   },
   {
     timestamps: true,

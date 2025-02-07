@@ -17,6 +17,7 @@ import {
   getQuizzesByAssessment,
   getQuizAttempts,
   deleteScore,
+  recordQuizAttempt,
   completeQuiz,
 } from "../controllers/AssessmentController.js";
 
@@ -26,6 +27,7 @@ router.post("/task/add/:userId/:schoolId", createTaskAssessment);
 router.post("/quiz/add/:userId/:schoolId", createQuizAssessment);
 router.get("/quizzes/:assessmentId", getQuizzesByAssessment);
 router.get("/quizzes/attempt/:assessmentId", getQuizAttempts);
+router.post("/quizzes/checkAttempt/:assessmentId", recordQuizAttempt);
 router.post("/quiz/finish/:assessmentId", completeQuiz);
 router.get("/:userId", getAllAssessmentByUser);
 router.get("/student/:studentId", getAllAssessmentByStudent); //for tracking student progress

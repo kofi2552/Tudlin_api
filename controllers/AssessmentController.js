@@ -320,45 +320,213 @@ export const getQuizzesByAssessment = async (req, res) => {
   }
 };
 
+// export const getQuizAttempts = async (req, res) => {
+//   try {
+//     const { assessmentId } = req.params;
+
+//     // Find the user's assessment quiz record
+//     const Attempts = await Assessment.findOne({
+//       where: { id: assessmentId },
+//     });
+//     res.json({ attempts: Attempts.quizAttempts });
+//   } catch (error) {
+//     console.error("Error fetching attempts:", error);
+//     res.status(500).json({ message: "Server error, couldn't fetch attempts" });
+//   }
+// };
+
+// export const completeQuiz = async (req, res) => {
+//   const { assessmentId } = req.params;
+//   console.log("completing quiz with id: ", assessmentId);
+
+//   try {
+//     // Find the user's assessment quiz record
+//     const QuizToComplete = await Assessment.findOne({
+//       where: { id: assessmentId },
+//     });
+
+//     if (!QuizToComplete) {
+//       return res.status(404).json({ message: "Quiz not found" });
+//     }
+
+//     const CompletedQuiz = await QuizToComplete.update({
+//       quizAttempts: 0,
+//     });
+
+//     if (CompletedQuiz) {
+//       res.json({ message: "You have exhausted all your allowed attempts" });
+//     }
+//   } catch (error) {
+//     console.error("Error occured with your attempts:", error);
+//     res.status(500).json({ message: "Server error, couldn't access attempts" });
+//   }
+// };
+
 export const getQuizAttempts = async (req, res) => {
   try {
     const { assessmentId } = req.params;
+    // Assuming studentId is passed as a query parameter, e.g. ?studentId=123
+    const { studentId } = req.query;
 
-    // Find the user's assessment quiz record
-    const Attempts = await Assessment.findOne({
-      where: { id: assessmentId },
+    console.log(
+      "Getting quiz attempts for student:",
+      studentId,
+      "assessment:",
+      assessmentId
+    );
+
+    // Fetch the assessment to get the allowed attempts
+    const assessment = await Assessment.findByPk(assessmentId);
+    if (!assessment) {
+      return res.status(404).json({ message: "Assessment not found" });
+    }
+    const allowedAttempts = assessment.quizAttempts; // e.g., 3 attempts allowed
+
+    // Find the student's record for this assessment
+    const scoreRecord = await StudentAssessmentScore.findOne({
+      where: { assessment_id: assessmentId, student_id: studentId },
     });
-    res.json({ attempts: Attempts.quizAttempts });
+    const currentAttempts = scoreRecord ? scoreRecord.attempts : 0;
+
+    res.json({ allowedAttempts, currentAttempts });
   } catch (error) {
     console.error("Error fetching attempts:", error);
-    res.status(500).json({ message: "Server error, couldn't fetch attempts" });
+    res.status(500).json({
+      message: "Server error, couldn't fetch attempts",
+      details: error.message,
+    });
+  }
+};
+
+export const recordQuizAttempt = async (req, res) => {
+  const { assessmentId } = req.params;
+  const { studentId } = req.body; // Expect studentId in the request body
+  console.log(
+    "Recording quiz attempts for student:",
+    studentId,
+    "assessment:",
+    assessmentId
+  );
+
+  try {
+    // Fetch the assessment (to get any additional info if needed)
+    const assessment = await Assessment.findByPk(assessmentId);
+    if (!assessment) {
+      return res.status(404).json({ message: "Assessment not found" });
+    }
+
+    // Find the StudentAssessmentScore record for this student and assessment
+    let scoreRecord = await StudentAssessmentScore.findOne({
+      where: { assessment_id: assessmentId, student_id: studentId },
+    });
+
+    if (scoreRecord) {
+      // Increment the attempt count
+      scoreRecord.attempts = scoreRecord.attempts + 1;
+      await scoreRecord.save();
+    } else {
+      // If no record exists, create one with attempts set to 1.
+      scoreRecord = await StudentAssessmentScore.create({
+        assessment_id: assessmentId,
+        student_id: studentId,
+        score: 0, // Default score; adjust as needed
+        max_score: assessment.tscore, // or set a default like 100
+        attempts: 1,
+      });
+    }
+
+    res.json({
+      message: "Quiz attempt recorded",
+      currentAttempts: scoreRecord.attempts,
+    });
+  } catch (error) {
+    console.error("Error recording quiz attempt:", error);
+    res.status(500).json({
+      message: "Server error, couldn't record quiz attempt",
+      details: error.message,
+    });
   }
 };
 
 export const completeQuiz = async (req, res) => {
+  // Expect both assessmentId and studentId (e.g. from params or body)
   const { assessmentId } = req.params;
-  console.log("completing quiz with id: ", assessmentId);
+  const { studentId } = req.body;
+  console.log(
+    "Completing quiz for student:",
+    studentId,
+    "assessment:",
+    assessmentId
+  );
 
   try {
-    // Find the user's assessment quiz record
-    const QuizToComplete = await Assessment.findOne({
-      where: { id: assessmentId },
-    });
-
-    if (!QuizToComplete) {
-      return res.status(404).json({ message: "Quiz not found" });
+    // First, fetch the Assessment to know the allowed attempts
+    const assessment = await Assessment.findByPk(assessmentId);
+    if (!assessment) {
+      return res.status(404).json({ message: "Quiz (Assessment) not found" });
     }
 
-    const CompletedQuiz = await QuizToComplete.update({
-      quizAttempts: 0,
+    // Assume that the allowed number of attempts is stored in assessment.quizAttempts
+    const allowedAttempts = assessment.quizAttempts; // e.g. 3 attempts allowed
+
+    // Then, try to find the StudentAssessmentScore record for this student and assessment.
+    // This record will track the score (if any) and the number of attempts made.
+    let scoreRecord = await StudentAssessmentScore.findOne({
+      where: { assessment_id: assessmentId, student_id: studentId },
     });
 
-    if (CompletedQuiz) {
-      res.json({ message: "You have exhausted all your allowed attempts" });
+    if (scoreRecord) {
+      // Increment the attempt count
+      scoreRecord.attempts = scoreRecord.attempts + 1;
+      await scoreRecord.save();
+    } else {
+      // If no record exists (first attempt), create one with attempt count 1.
+      scoreRecord = await StudentAssessmentScore.create({
+        assessment_id: assessmentId,
+        student_id: studentId,
+        score: 0, // or null, depending on your design
+        max_score: assessment.tscore, // or any default maximum score
+        attempts: 1,
+      });
+    }
+
+    // Check if the student has now exhausted their allowed attempts.
+    if (scoreRecord.attempts >= allowedAttempts) {
+      try {
+        // Mark the quiz as complete for the student
+        const CompleteQuiz = await StudentAssessmentScore.update(
+          { isComplete: true },
+          { where: { assessment_id: assessmentId, student_id: studentId } }
+        );
+
+        // Check if the update was successful
+        if (CompleteQuiz[0] > 0) {
+          console.log("Quiz marked as complete for student");
+        } else {
+          console.log("Failed to mark quiz as complete for student");
+        }
+      } catch (error) {
+        console.error("Error updating quiz status:", error);
+      }
+
+      return res.json({
+        message: "You have exhausted all your allowed attempts for this quiz",
+        attempts: scoreRecord.attempts,
+        completed: true,
+      });
+    } else {
+      // If not yet exhausted, simply return the current attempt count.
+      return res.json({
+        message: "Quiz attempt recorded",
+        attempts: scoreRecord.attempts,
+      });
     }
   } catch (error) {
-    console.error("Error occured with your attempts:", error);
-    res.status(500).json({ message: "Server error, couldn't access attempts" });
+    console.error("Error completing quiz for student:", error);
+    return res.status(500).json({
+      message: "Server error, couldn't record quiz attempt",
+      details: error.message,
+    });
   }
 };
 
@@ -516,7 +684,7 @@ export const getAllAssessmentForStudent = async (req, res) => {
         {
           model: StudentAssessmentScore,
           required: false, // Include score info if available; otherwise, it'll be null
-          attributes: ["score", "max_score"],
+          attributes: ["score", "max_score", "isComplete"],
           where: { student_id: studentId },
         },
         {
