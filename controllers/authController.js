@@ -183,7 +183,7 @@ export const signup = async (req, res) => {
       res.cookie("authToken", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: "lax",
         maxAge: 12 * 60 * 60 * 1000,
       });
 
@@ -246,7 +246,7 @@ export const login = async (req, res) => {
     res.cookie("authToken", token, {
       httpOnly: true, // Secure and inaccessible to client-side scripts
       secure: process.env.NODE_ENV === "production", // Only in HTTPS in production
-      sameSite: "strict", // Strict cross-site cookie policy
+      sameSite: "lax", // Strict cross-site cookie policy
       maxAge: 12 * 60 * 60 * 1000, // 1 hour
     });
 
@@ -268,8 +268,23 @@ export const getLoggedInUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
-    console.log("logged in user sent!");
-    return res.status(200).json({ user });
+    const token = jwt.sign(
+      { id: user.id, username: user.username },
+      JWT_SECRET,
+      { expiresIn: "12h" }
+    );
+    // Set the token in an HTTP-only cookie
+    res.cookie("authToken", token, {
+      httpOnly: true, // Secure and inaccessible to client-side scripts
+      secure: process.env.NODE_ENV === "production", // Only in HTTPS in production
+      sameSite: "lax", // Strict cross-site cookie policy
+      maxAge: 12 * 60 * 60 * 1000, // 1 hour
+    });
+
+    // res.status(200).json({ message: "Login successful.", user: user, token });
+
+    console.log("logged in user and token sent!");
+    return res.status(200).json({ user, token });
   } catch (error) {
     //console.error("Error fetching logged-in user:", error);
     return res.status(500).json({ message: "Internal server error." });
@@ -284,8 +299,9 @@ export const logout = async (req, res) => {
     expires: new Date(0),
   });
   res.clearCookie("authToken", {
-    sameSite: "none",
+    sameSite: "lax",
     secure: true,
+    path: "/",
   });
   res.status(200).send("User has been logged out.");
 };

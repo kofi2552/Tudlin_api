@@ -1,3 +1,6 @@
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { Student, Class, Curriculum } from "../models/associations.js";
 import School from "../models/School.js";
 import UserClassSubject from "../models/UserClassSubject.js";
@@ -32,6 +35,93 @@ export const createStudent = async (req, res) => {
   } catch (error) {
     console.error("Error creating student:", error);
     res.status(500).json({ error: "Failed to add student. Please try again." });
+  }
+};
+
+// STUDENT LOGIN -------------------------------------------------------------
+export const StudentLogin = async (req, res) => {
+  const { email } = req.body;
+
+  console.log("Verify received student email: ", email);
+
+  try {
+    // Find the student by email
+    const student = await Student.findOne({
+      where: { email },
+      include: [
+        {
+          model: Class,
+          as: "class",
+          attributes: ["id", "name"],
+        },
+        {
+          model: Curriculum,
+          as: "curriculum",
+        },
+      ],
+    });
+
+    if (!student) {
+      console.log("Student not found!");
+      return res.status(404).json({ error: "Student not found." });
+    }
+
+    // Validate the password (if password is stored for students)
+    // const isPasswordValid = await bcrypt.compare(password, student.password);
+    // if (!isPasswordValid) {
+    //   return res.status(401).json({ error: "Invalid credentials." });
+    // }
+
+    // Generate a JWT token
+    const token = jwt.sign(
+      { id: student.id, email: student.email, role: "student" },
+      process.env.JWT_SECRET,
+      { expiresIn: "12h" }
+    );
+
+    // Set the token in an HTTP-only cookie
+    res.cookie("authToken", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 12 * 60 * 60 * 1000, // 12 hours
+    });
+
+    // Fetch the school information
+    const school = await School.findOne({
+      where: { specialId: student.schoolId },
+    });
+
+    // Return the student details, school info, and token
+    res.status(200).json({
+      message: "Login successful.",
+      student,
+      school,
+      token,
+    });
+  } catch (error) {
+    console.error("Error during student login:", error);
+    res.status(500).json({ error: "An error occurred during login." });
+  }
+};
+
+export const SetStudentPassword = async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  try {
+    const student = await Student.findOne({ where: { email } });
+    if (!student) {
+      return res.status(404).json({ error: "Student not found." });
+    }
+
+    // Update the password
+    student.password = newPassword;
+    await student.save();
+
+    res.status(200).json({ message: "Password has been set successfully." });
+  } catch (error) {
+    console.error("Error setting password:", error);
+    res.status(500).json({ error: "Failed to set password." });
   }
 };
 
@@ -141,7 +231,6 @@ export const getStudentsByClass = async (req, res) => {
   }
 };
 
-// STUDENT LOGIN -------------------------------------------------------------
 // Fetch a single student by ID
 export const getStudentByEmail = async (req, res) => {
   const { email } = req.body;

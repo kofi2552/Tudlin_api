@@ -5,14 +5,11 @@ import Quiz from "./Quiz.js";
 
 const AssessmentQuiz = sequelize.define("AssessmentQuiz", {
   assessmentId: {
-    type: DataTypes.INTEGER,
-    references: {
-      model: Assessment,
-      key: "id",
-    },
+    type: DataTypes.UUID,
+    references: { model: "Assessments", key: "id" },
   },
   quizId: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     references: {
       model: Quiz,
       key: "id",

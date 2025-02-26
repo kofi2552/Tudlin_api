@@ -29,6 +29,6 @@ sequelize
 export default sequelize;
 
 // sequelize
-//   .sync({ alter: true }) // Use { force: true } to drop and recreate tables (use cautiously)
+//   .sync({ force: true }) // Use { force: true } to drop and recreate tables (use cautiously)
 //   .then(() => console.log("Database synced successfully"))
 //   .catch((err) => console.error("Database sync error:", err));

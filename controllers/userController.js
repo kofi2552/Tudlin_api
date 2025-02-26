@@ -76,3 +76,16 @@ export const getAllUsers = async (req, res, next) => {
     next(createError(500, "Error fetching users: " + error.message));
   }
 };
+
+export const getAllTutorsBySchool = async (req, res, next) => {
+  const { schoolId } = req.params;
+
+  console.log("fetch tutors with id: ", schoolId);
+
+  try {
+    const tutors = await User.findAll({ where: { schoolId } });
+    res.status(200).json(tutors);
+  } catch (error) {
+    next(createError(500, "Error fetching users: " + error.message));
+  }
+};

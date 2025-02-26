@@ -7,6 +7,7 @@ import {
   updateUser,
   deleteUser,
   getAllUsers,
+  getAllTutorsBySchool,
 } from "../controllers/userController.js";
 
 const router = express.Router();
@@ -26,10 +27,11 @@ router.put("/edit/:id", updateUser);
 // Delete a user
 router.delete("/del/:id", deleteUser);
 
+router.get("/all/:schoolId", verifyToken, getAllTutorsBySchool);
+
 // router.post("/add", verifyToken, createUser);
 
 // // Get all users
-// router.get("/all", verifyToken, getAllUsers);
 
 // // Get a single user by ID
 // router.get("/:id", verifyToken, getUserById);

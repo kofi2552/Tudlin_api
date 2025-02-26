@@ -1,10 +1,12 @@
 // /backend/server.js
 import express from "express";
+import http from "http"; // Import HTTP module
+import { Server } from "socket.io";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
-
+import chatRoutes from "./routes/chatRoutes.js";
 import authRoute from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import schoolRoutes from "./routes/schoolRoutes.js";
@@ -23,13 +25,23 @@ import AssessmentRoutes from "./routes/AssessmentRoutes.js";
 import timetableRoutes from "./routes/timetableRoutes.js";
 import StudentSubjectRoutes from "./routes/StudentSubjectRoutes.js";
 import notifyRoutes from "./routes/notifyRoutes.js";
+import blogRoutes from "./routes/blogRoutes.js";
 
 const app = express();
-app.use(cookieParser());
 
 dotenv.config();
 const port = 5000;
 
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: ["https://tudlin-client.onrender.com", "http://localhost:5173"],
+    credentials: true,
+  },
+});
+
+app.use(cookieParser());
 // Middleware setup
 app.use(
   cors({
@@ -49,6 +61,7 @@ app.use("/api/auth", authRoute);
 app.use("/api/users", userRoutes);
 app.use("/api", AgentRoutes);
 app.use("/api", schoolRoutes);
+app.use("/api/chats", chatRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/class", classRoutes);
 app.use("/api/subject", subjectRoutes);
@@ -63,8 +76,27 @@ app.use("/api/assessments", AssessmentRoutes);
 app.use("/api/timetable", timetableRoutes);
 app.use("/api/stu-subj", StudentSubjectRoutes);
 app.use("/api", notifyRoutes);
+app.use("/api/blog", blogRoutes);
+
+// WebSocket connection
+io.on("connection", (socket) => {
+  console.log("A user connected:", socket.id);
+
+  socket.on("send-message", (message) => {
+    //console.log("Message received:", message);
+    io.emit("receive-message", message);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("A user disconnected:", socket.id);
+  });
+});
 
 // Start the server
-app.listen(port, () => {
+// app.listen(port, () => {
+//   console.log(`Backend server is running on http://localhost:${port}`);
+// });
+
+server.listen(port, () => {
   console.log(`Backend server is running on http://localhost:${port}`);
 });

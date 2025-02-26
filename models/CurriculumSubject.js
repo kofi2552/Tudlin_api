@@ -43,10 +43,12 @@ CurriculumSubject.belongsTo(Curriculum, { foreignKey: "curriculumId" });
 CurriculumSubject.belongsTo(Subject, {
   foreignKey: "subjectId",
   as: "subject",
+  onDelete: "CASCADE",
 });
 Subject.hasMany(CurriculumSubject, {
   foreignKey: "subjectId",
   as: "curriculumSubjects",
+  onDelete: "CASCADE",
 });
 
 export default CurriculumSubject;

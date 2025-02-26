@@ -18,7 +18,7 @@ export const createSchool = async (req, res) => {
       name,
       address,
       type,
-      specialId, // Add the specialId to the creation payload
+      //specialId, // Add the specialId to the creation payload
     });
 
     res

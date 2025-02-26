@@ -9,7 +9,11 @@ import Quiz from "./Quiz.js";
 const Assessment = sequelize.define(
   "Assessment",
   {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
     name: { type: DataTypes.STRING, allowNull: false },
     desc: { type: DataTypes.STRING, allowNull: true },
     tscore: { type: DataTypes.INTEGER, allowNull: false },
@@ -42,15 +46,15 @@ const Assessment = sequelize.define(
     },
     schoolId: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
     },
     taskLink: {
       type: DataTypes.STRING,
       allowNull: true,
     },
     userId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
+      type: DataTypes.UUID,
+      allowNull: false,
     },
     isDeadline: {
       type: DataTypes.BOOLEAN,
@@ -81,20 +85,24 @@ const Assessment = sequelize.define(
 const StudentAssessmentScore = sequelize.define(
   "StudentAssessmentScore",
   {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
     assessment_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       references: { model: "Assessments", key: "id" },
       allowNull: false,
-    }, // Foreign key to Assessment
+    },
     student_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
-    }, // Foreign key to Student
+    },
     score: {
       type: DataTypes.FLOAT,
       allowNull: false,
-    }, // Score of the student for the assessment
+    },
     max_score: {
       type: DataTypes.FLOAT,
       allowNull: false,

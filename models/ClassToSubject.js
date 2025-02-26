@@ -14,12 +14,14 @@ Subject.belongsToMany(Class, {
   through: ClassToSubjects,
   foreignKey: "subjectId",
   as: "Classes",
+  onDelete: "CASCADE",
 });
 
 Class.belongsToMany(Subject, {
   through: ClassToSubjects,
   foreignKey: "classId",
   as: "Subjects",
+  onDelete: "CASCADE",
 });
 
 ClassToSubjects.belongsTo(Subject, { foreignKey: "subjectId" });

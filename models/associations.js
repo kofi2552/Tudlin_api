@@ -3,6 +3,9 @@ import Class from "./Class.js";
 import Curriculum from "./Curriculum.js";
 import Subject from "./Subjects.js";
 import StudyAreas from "./StudyAreas.js";
+import User from "./User.js";
+import Chat from "./Chat.js";
+import ChatUsers from "./ChatUsers.js";
 
 // Define associations
 Curriculum.hasMany(Student, { foreignKey: "curriculum_id", as: "students" });
@@ -33,4 +36,41 @@ StudyAreas.hasMany(Subject, {
   as: "subjects",
 });
 
-export { Student, Subject, Class, StudyAreas, Curriculum };
+// Many-to-Many relationship setup
+Chat.belongsToMany(User, {
+  through: ChatUsers,
+  foreignKey: "chatId",
+  as: "ChatUsersList",
+});
+
+// Chat to Students (group chats)
+Chat.belongsToMany(Student, {
+  through: ChatUsers,
+  foreignKey: "chatId",
+  as: "ChatStudentsList",
+});
+
+// User to Chats
+User.belongsToMany(Chat, {
+  through: ChatUsers,
+  foreignKey: "userId",
+  as: "UserChatsList",
+});
+
+// Student to Chats
+Student.belongsToMany(Chat, {
+  through: ChatUsers,
+  foreignKey: "studentId",
+  as: "StudentChatsList",
+});
+
+export {
+  Student,
+  Subject,
+  Class,
+  ChatUsers,
+  Chat,
+  User,
+  StudyAreas,
+  Curriculum,
+};

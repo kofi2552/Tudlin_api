@@ -12,13 +12,15 @@ const CurriculumToClasses = sequelize.define("CurriculumToClasses", {
 Class.belongsToMany(Curriculum, {
   through: CurriculumToClasses,
   foreignKey: "classId",
-  as: "Curriculum", // Alias for the associated curriculums
+  as: "Curriculum",
+  onDelete: "CASCADE",
 });
 
 Curriculum.belongsToMany(Class, {
   through: CurriculumToClasses,
   foreignKey: "curriculumId",
-  as: "Classes", // Alias for the associated classes
+  as: "Classes",
+  onDelete: "CASCADE",
 });
 
 export default CurriculumToClasses;

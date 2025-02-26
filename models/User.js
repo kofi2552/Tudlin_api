@@ -6,6 +6,11 @@ import School from "./School.js";
 const User = sequelize.define(
   "User",
   {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
     username: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -39,7 +44,7 @@ const User = sequelize.define(
       defaultValue: "tutor",
     },
     schoolId: {
-      type: DataTypes.STRING,
+      type: DataTypes.UUID,
       allowNull: true,
       references: {
         model: "Schools",

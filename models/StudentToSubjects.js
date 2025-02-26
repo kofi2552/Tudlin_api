@@ -13,12 +13,14 @@ Student.belongsToMany(Subject, {
   through: StudentToSubjects,
   foreignKey: "studentId",
   as: "Subjects",
+  onDelete: "CASCADE",
 });
 
 Subject.belongsToMany(Student, {
   through: StudentToSubjects,
   foreignKey: "subjectId",
   as: "Students",
+  onDelete: "CASCADE",
 });
 
 export default StudentToSubjects;
