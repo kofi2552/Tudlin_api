@@ -9,6 +9,10 @@ import { Op } from "sequelize";
 import sequelize from "../database.js";
 import Quiz from "../models/Quiz.js";
 import AssessmentQuiz from "../models/AssessmentQuiz.js";
+import multer from "multer";
+import fs from "fs";
+import path from "path";
+import ExcelJS from "exceljs";
 
 // Create Assessment
 export const createTaskAssessment = async (req, res) => {
@@ -24,7 +28,7 @@ export const createTaskAssessment = async (req, res) => {
     timedQuizId,
   } = values;
 
-  console.log("create task details recived: ", req.body, values, req.params);
+  //console.log("create task details recived: ", req.body, values, req.params);
 
   try {
     const user = await User.findByPk(userId);
@@ -178,116 +182,117 @@ export const createTaskAssessment = async (req, res) => {
 
 // Get All Assessments
 
-export const createQuizAssessment = async (req, res) => {
-  const { userId, schoolId } = req.params;
-  const { values, content, class_id, curriculum_id } = req.body;
-  const {
-    name,
-    tscore,
-    desc,
-    task_category_id,
-    subject_id,
-    deadlineDateTime,
-    quizAttempts,
-    duration,
-  } = values;
+// export const createQuizAssessment = async (req, res) => {
+//   const { userId, schoolId } = req.params;
+//   const currentUserId = req.userId;
+//   const { values, content, class_id, curriculum_id } = req.body;
+//   const {
+//     name,
+//     tscore,
+//     desc,
+//     task_category_id,
+//     subject_id,
+//     deadlineDateTime,
+//     quizAttempts,
+//     duration,
+//   } = values;
 
-  console.log("Received Quiz Details:", req.body, values, req.params);
+//   console.log("Received Quiz Details:", req.body, values, req.params);
 
-  try {
-    const user = await User.findByPk(userId);
-    if (!user) return res.status(404).json({ error: "User not found" });
+//   try {
+//     const user = await User.findByPk(userId || currentUserId);
+//     if (!user) return res.status(404).json({ error: "User not found" });
 
-    const school = await School.findOne({ where: { specialId: schoolId } });
-    if (!school) return res.status(404).json({ error: "School not found" });
+//     const school = await School.findOne({ where: { specialId: schoolId } });
+//     if (!school) return res.status(404).json({ error: "School not found" });
 
-    // Set deadline if provided
-    const isDeadline = !!deadlineDateTime;
-    const formattedDeadlineDate = isDeadline
-      ? new Date(deadlineDateTime)
-      : null;
+//     // Set deadline if provided
+//     const isDeadline = !!deadlineDateTime;
+//     const formattedDeadlineDate = isDeadline
+//       ? new Date(deadlineDateTime)
+//       : null;
 
-    // Cap quiz duration at 30 minutes
-    const finalDuration = Math.min(duration, 30);
+//     // Cap quiz duration at 30 minutes
+//     const finalDuration = Math.min(duration, 30);
 
-    // Start a database transaction
-    const transaction = await sequelize.transaction();
+//     // Start a database transaction
+//     const transaction = await sequelize.transaction();
 
-    try {
-      // Create the quiz questions in the Quiz table
-      const quizEntries = await Promise.all(
-        content.map(async (q) => {
-          return await Quiz.create(
-            {
-              question: q.question,
-              options: q.options,
-              correctAnswer: q.correctAnswer,
-            },
-            { transaction }
-          );
-        })
-      );
-      if (quizEntries.length === 0) {
-        return res.status(401).json({ error: "No questions found" });
-      }
-      // Extract quiz IDs
-      const quizIds = quizEntries.map((quiz) => quiz.id);
+//     try {
+//       // Create the quiz questions in the Quiz table
+//       const quizEntries = await Promise.all(
+//         content.map(async (q) => {
+//           return await Quiz.create(
+//             {
+//               question: q.question,
+//               options: q.options,
+//               correctAnswer: q.correctAnswer,
+//             },
+//             { transaction }
+//           );
+//         })
+//       );
+//       if (quizEntries.length === 0) {
+//         return res.status(401).json({ error: "No questions found" });
+//       }
+//       // Extract quiz IDs
+//       const quizIds = quizEntries.map((quiz) => quiz.id);
 
-      // Create the assessment and store quiz IDs in `timedQuizId`
-      const newAssessment = await Assessment.create(
-        {
-          name,
-          tscore,
-          desc,
-          task_category_id,
-          class_id,
-          subject_id,
-          curriculum_id,
-          schoolId: school.specialId,
-          userId: user.id || userId,
-          duration: finalDuration,
-          isDeadline,
-          quizAttempts,
-          isQuiz: true,
-          deadlineDateTime: formattedDeadlineDate,
-          timedQuizId: JSON.stringify(quizIds), // Store quiz IDs as a JSON array
-        },
-        { transaction }
-      );
+//       // Create the assessment and store quiz IDs in `timedQuizId`
+//       const newAssessment = await Assessment.create(
+//         {
+//           name,
+//           tscore,
+//           desc,
+//           task_category_id,
+//           class_id,
+//           subject_id,
+//           curriculum_id,
+//           schoolId: school.specialId,
+//           userId: user.id || currentUserId || userId,
+//           duration: finalDuration,
+//           isDeadline,
+//           quizAttempts,
+//           isQuiz: true,
+//           deadlineDateTime: formattedDeadlineDate,
+//           timedQuizId: JSON.stringify(quizIds), // Store quiz IDs as a JSON array
+//         },
+//         { transaction }
+//       );
 
-      // Link quizzes to the assessment using the AssessmentQuiz association table
-      await Promise.all(
-        quizIds.map(async (quizId) => {
-          return await AssessmentQuiz.create(
-            {
-              assessmentId: newAssessment.id,
-              quizId: quizId,
-            },
-            { transaction }
-          );
-        })
-      );
+//       // Link quizzes to the assessment using the AssessmentQuiz association table
+//       await Promise.all(
+//         quizIds.map(async (quizId) => {
+//           return await AssessmentQuiz.create(
+//             {
+//               assessmentId: newAssessment.id,
+//               quizId: quizId,
+//             },
+//             { transaction }
+//           );
+//         })
+//       );
 
-      // Commit the transaction
-      await transaction.commit();
+//       // Commit the transaction
+//       await transaction.commit();
 
-      console.log("Assessment and quizzes created successfully");
+//       console.log("Assessment and quizzes created successfully");
 
-      res.status(201).json({
-        message: "Assessment created successfully",
-        assessment: newAssessment,
-        quizzes: quizEntries,
-      });
-    } catch (err) {
-      await transaction.rollback();
-      throw err;
-    }
-  } catch (err) {
-    res
-      .status(500)
-      .json({ error: "Failed to create assessment", details: err.message });
-  }
-};
+//       res.status(201).json({
+//         message: "Assessment created successfully",
+//         assessment: newAssessment,
+//         quizzes: quizEntries,
+//       });
+//     } catch (err) {
+//       await transaction.rollback();
+//       throw err;
+//     }
+//   } catch (err) {
+//     res
+//       .status(500)
+//       .json({ error: "Failed to create assessment", details: err.message });
+//   }
+// };
 
 export const getQuizzesByAssessment = async (req, res) => {
   const { assessmentId } = req.params;
@@ -1117,5 +1122,164 @@ export const getFilteredAssessments = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error fetching filtered assessments", error });
+  }
+};
+
+export const createQuizAssessment = async (req, res) => {
+  const { userId, schoolId } = req.params;
+  //const currentUserId = req.userId;
+  const { data } = req.body;
+  if (!data) {
+    return res.status(400).json({ error: "Missing required data" });
+  }
+
+  const parsedData = JSON.parse(data); // Parse the JSON string
+
+  const {
+    name,
+    desc,
+    task_category_id,
+    subject_id,
+    deadlineDateTime,
+    quizAttempts,
+    duration,
+  } = parsedData.values;
+
+  const {
+    content: formQuestions,
+    totalScore,
+    class_id,
+    curriculum_id,
+  } = parsedData;
+
+  //console.log("Received Quiz Details:", parsedData, req.params);
+
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const school = await School.findOne({ where: { specialId: schoolId } });
+    if (!school) return res.status(404).json({ error: "School not found" });
+
+    // Set deadline if provided
+    const isDeadline = !!deadlineDateTime;
+    const formattedDeadlineDate = isDeadline
+      ? new Date(deadlineDateTime)
+      : null;
+
+    // Cap quiz duration at 30 minutes
+    const finalDuration = Math.min(duration, 30);
+
+    // Start a database transaction
+    const transaction = await sequelize.transaction();
+
+    try {
+      // Determine the source of quiz questions
+      let questions = [];
+      if (req.file) {
+        try {
+          const workbook = new ExcelJS.Workbook();
+          await workbook.xlsx.readFile(req.file.path);
+          const worksheet = workbook.worksheets[0];
+          // Assuming the first row is a header; adjust slice() if needed.
+          questions = worksheet
+            .getSheetValues()
+            .slice(2)
+            .map((row) => ({
+              question: row[1],
+              options: JSON.parse(row[2]), // Options must be a valid JSON string in the Excel cell.
+              correctAnswer: row[3],
+            }));
+          fs.unlinkSync(req.file.path); // Delete file after processing
+        } catch (error) {
+          await transaction.rollback();
+          return res.status(500).json({
+            error: "Error processing uploaded file",
+            details: error.message,
+          });
+        }
+      } else {
+        // Use questions from the form if no file was uploaded
+        questions = formQuestions;
+      }
+
+      // Validate that we have at least one question
+      if (!questions || questions.length === 0) {
+        await transaction.rollback();
+        return res.status(400).json({ error: "No quiz questions provided" });
+      }
+
+      // Create quiz entries in the Quiz table
+      const quizEntries = await Promise.all(
+        questions.map(async (q) => {
+          return await Quiz.create(
+            {
+              question: q.question,
+              options: q.options,
+              correctAnswer: q.correctAnswer,
+            },
+            { transaction }
+          );
+        })
+      );
+
+      if (quizEntries.length === 0) {
+        await transaction.rollback();
+        return res.status(401).json({ error: "No quiz entries created" });
+      }
+      const quizIds = quizEntries.map((quiz) => quiz.id);
+
+      // Create the assessment record and store quiz IDs as a JSON array in timedQuizId
+      const newAssessment = await Assessment.create(
+        {
+          name,
+          tscore: totalScore,
+          desc,
+          task_category_id,
+          class_id,
+          subject_id,
+          curriculum_id,
+          schoolId: school.specialId,
+          userId: user.id || userId,
+          duration: finalDuration,
+          isDeadline,
+          quizAttempts,
+          isQuiz: true,
+          deadlineDateTime: formattedDeadlineDate,
+          timedQuizId: JSON.stringify(quizIds),
+        },
+        { transaction }
+      );
+
+      // Link quizzes to the assessment using the AssessmentQuiz association table
+      await Promise.all(
+        quizIds.map(async (quizId) => {
+          return await AssessmentQuiz.create(
+            {
+              assessmentId: newAssessment.id,
+              quizId: quizId,
+            },
+            { transaction }
+          );
+        })
+      );
+
+      await transaction.commit();
+
+      console.log("Assessment and quizzes created successfully");
+
+      res.status(201).json({
+        message: "Assessment created successfully",
+        assessment: newAssessment,
+        quizzes: quizEntries,
+      });
+    } catch (err) {
+      await transaction.rollback();
+      throw err;
+    }
+  } catch (err) {
+    res
+      .status(500)
+      .json({ error: "Failed to create assessment", details: err.message });
   }
 };

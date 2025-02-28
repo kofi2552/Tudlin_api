@@ -1,5 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import ExcelJS from "exceljs";
+import fs from "fs";
 import crypto from "crypto";
 import { Student, Class, Curriculum } from "../models/associations.js";
 import School from "../models/School.js";
@@ -345,3 +347,39 @@ export const deleteStudent = async (req, res) => {
     res.status(500).json({ error: "Failed to delete student" });
   }
 };
+
+// export const uploadStudents = async (req, res) => {
+//   try {
+//     if (!req.file) {
+//       return res.status(400).json({ error: "No file uploaded" });
+//     }
+
+//     const workbook = new ExcelJS.Workbook();
+//     await workbook.xlsx.readFile(req.file.path);
+//     const worksheet = workbook.getWorksheet(1);
+//     const students = [];
+
+//     worksheet.eachRow((row, rowNumber) => {
+//       if (rowNumber === 1) return; // Skip header row
+
+//       const studentData = {
+//         name: row.getCell(1).value,
+//         email: row.getCell(2).value,
+//         password: row.getCell(3).value,
+//         class_id: row.getCell(4).value,
+//         curriculum_id: row.getCell(5).value,
+//         schoolId: row.getCell(6).value,
+//       };
+
+//       students.push(studentData);
+//     });
+
+//     await Student.bulkCreate(students); // Bulk insert into database
+
+//     fs.unlinkSync(req.file.path); // Remove file after processing
+
+//     res.status(200).json({ message: "Students uploaded successfully" });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };

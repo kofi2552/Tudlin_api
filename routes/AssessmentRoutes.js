@@ -20,11 +20,18 @@ import {
   recordQuizAttempt,
   completeQuiz,
 } from "../controllers/AssessmentController.js";
+import { verifyToken } from "../middleware/jwt.js";
+import upload from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
 
 router.post("/task/add/:userId/:schoolId", createTaskAssessment);
-router.post("/quiz/add/:userId/:schoolId", createQuizAssessment);
+router.post(
+  "/quiz/add/:userId/:schoolId",
+  upload.single("file"),
+  // verifyToken,
+  createQuizAssessment
+);
 router.get("/quizzes/:assessmentId", getQuizzesByAssessment);
 router.get("/quizzes/attempt/:assessmentId", getQuizAttempts);
 router.post("/quizzes/checkAttempt/:assessmentId", recordQuizAttempt);

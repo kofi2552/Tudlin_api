@@ -14,8 +14,8 @@ const Student = sequelize.define(
     name: { type: DataTypes.STRING, allowNull: false },
     email: { type: DataTypes.STRING, allowNull: false, unique: true },
     password: { type: DataTypes.STRING, allowNull: true }, // Allow null password
-    class_id: { type: DataTypes.INTEGER, allowNull: false },
-    curriculum_id: { type: DataTypes.INTEGER, allowNull: false },
+    class_id: { type: DataTypes.UUID, allowNull: false },
+    curriculum_id: { type: DataTypes.UUID, allowNull: false },
     schoolId: {
       type: DataTypes.UUID,
       allowNull: true,

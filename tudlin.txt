@@ -1,0 +1,37 @@
+BEGIN;
+
+
+INSERT INTO notifies (id, title, subtitle, description, image_url, button_url, button_text, created_at, updated_at) 
+VALUES
+(2, 'First Timers Tutorials', 'Using Tudlin to the Fullest', 
+'Prepare to be part of dynamic conversations that will redefine the boundaries of rich education', 
+'https://res.cloudinary.com/loyke/image/upload/v1735914412/koyarr/ct8q7avnofgqescqqnmm.jpg', 
+'https://www.youtube.com/', 'Register to Learn', '2025-01-02 21:33:34', '2025-01-03 14:26:50');
+
+CREATE TABLE schools (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    type VARCHAR(255) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL
+);
+
+INSERT INTO schools (id, name, type, address, created_at, updated_at) 
+VALUES
+(6, 'Morgan International Com School', 'International', 'Agona Swedru', '2024-11-16 18:24:09', '2024-12-08 15:49:19');
+
+
+INSERT INTO students (id, class_id, curriculum_id, name, email, created_at, updated_at) 
+VALUES
+(11, 18, 1, 'Nathan Otto', 'no@gmail.com', '2025-01-03 02:02:19', '2025-01-03 02:02:19'),
+(12, 22, 1, 'Adom Nhyira', 'adomnhyira@gmail.com', '2025-01-08 21:55:04', '2025-01-08 21:55:04'),
+(13, 21, 1, 'Kayla Addo', 'kaylaaddo@gmail.com', '2025-01-08 21:56:41', '2025-01-08 21:56:41');
+
+
+
+INSERT INTO users (id, username, email, password, is_admin, role, reset_token, reset_token_expires, created_at, updated_at, subject_id) 
+VALUES
+(11, 'kyde', 'wilwek.consult.hr@gmail.com', '$2a$10$TDqkrXwLRNn9GpyXhrNZx.qqw/EfFggn9q.OGAFnNHE/F9pr26KVS', TRUE, 'tutor', NULL, NULL, '2025-01-07 00:49:47', '2025-01-07 00:49:47', NULL);
+
+COMMIT;

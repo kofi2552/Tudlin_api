@@ -6,7 +6,11 @@ import Subject from "./Subjects.js";
 const Curriculum = sequelize.define(
   "Curriculum",
   {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
     name: { type: DataTypes.STRING, allowNull: false },
   },
   {

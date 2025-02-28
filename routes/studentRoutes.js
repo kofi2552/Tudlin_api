@@ -15,6 +15,7 @@ import {
   SetStudentPassword,
   getStudentsByClass,
 } from "../controllers/studentController.js";
+// import upload from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
 
@@ -29,5 +30,7 @@ router.get("/:id", getStudentById);
 router.put("/update/:id", SetStudentPassword);
 router.put("/:id", updateStudent);
 router.delete("/del/:id", deleteStudent);
+
+// router.post("/upload", upload.single("file"), uploadStudents);
 
 export default router;

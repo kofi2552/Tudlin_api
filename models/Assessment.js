@@ -20,11 +20,11 @@ const Assessment = sequelize.define(
     content: { type: DataTypes.STRING, allowNull: true },
     duration: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 }, // Time limit in minutes
     timedQuizId: {
-      type: DataTypes.JSON, // Stores an array of quiz IDs
+      type: DataTypes.JSON,
       allowNull: true,
     },
     task_category_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: {
         model: TaskCategory,
@@ -32,16 +32,16 @@ const Assessment = sequelize.define(
       },
     },
     class_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
     },
     subject_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       onDelete: "CASCADE",
     },
     curriculum_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
     },
     schoolId: {

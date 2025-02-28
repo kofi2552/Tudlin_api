@@ -4,11 +4,15 @@ import sequelize from "../database.js";
 const Subject = sequelize.define(
   "Subject",
   {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
     name: { type: DataTypes.STRING, allowNull: false },
     content: { type: DataTypes.STRING, allowNull: true },
     studyareaid: {
-      type: DataTypes.INTEGER, // Changed from STRING to INTEGER
+      type: DataTypes.UUID, // Changed from STRING to INTEGER
       allowNull: true,
       references: {
         model: "StudyAreas", // Matches the table name
@@ -17,10 +21,10 @@ const Subject = sequelize.define(
       onUpdate: "CASCADE", // Optional for cascading updates
       onDelete: "SET NULL", // Optional for handling deletions
     },
-    class_id: { type: DataTypes.INTEGER, allowNull: true },
+    class_id: { type: DataTypes.UUID, allowNull: true },
     isArchive: { type: DataTypes.BOOLEAN, defaultValue: false },
     curriculumId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: {
         model: "Curriculums",

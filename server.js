@@ -26,6 +26,7 @@ import timetableRoutes from "./routes/timetableRoutes.js";
 import StudentSubjectRoutes from "./routes/StudentSubjectRoutes.js";
 import notifyRoutes from "./routes/notifyRoutes.js";
 import blogRoutes from "./routes/blogRoutes.js";
+import uploadFileRoutes from "./routes/uploadFileRoutes.js";
 
 const app = express();
 
@@ -36,7 +37,11 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: ["https://tudlin-client.onrender.com", "http://localhost:5173"],
+    origin: [
+      "https://tudlin-client.onrender.com",
+      "http://localhost:5173",
+      "https://www.tudlin.com",
+    ],
     credentials: true,
   },
 });
@@ -77,6 +82,7 @@ app.use("/api/timetable", timetableRoutes);
 app.use("/api/stu-subj", StudentSubjectRoutes);
 app.use("/api", notifyRoutes);
 app.use("/api/blog", blogRoutes);
+app.use("/api/upload", uploadFileRoutes);
 
 // WebSocket connection
 io.on("connection", (socket) => {

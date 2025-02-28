@@ -4,7 +4,11 @@ import sequelize from "../database.js";
 const Notify = sequelize.define(
   "Notify",
   {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
     title: { type: DataTypes.STRING, allowNull: false },
     subtitle: { type: DataTypes.STRING, allowNull: false },
     description: { type: DataTypes.TEXT, allowNull: true },

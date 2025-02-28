@@ -22,7 +22,7 @@ const UserClassSubject = sequelize.define(
       },
     },
     classId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: {
         model: Class,
@@ -30,7 +30,7 @@ const UserClassSubject = sequelize.define(
       },
     },
     subjectId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: {
         model: Subject,
