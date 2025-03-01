@@ -27,6 +27,7 @@ import StudentSubjectRoutes from "./routes/StudentSubjectRoutes.js";
 import notifyRoutes from "./routes/notifyRoutes.js";
 import blogRoutes from "./routes/blogRoutes.js";
 import uploadFileRoutes from "./routes/uploadFileRoutes.js";
+import ActionRoutes from "./routes/ActionRoutes.js";
 
 const app = express();
 
@@ -83,6 +84,7 @@ app.use("/api/stu-subj", StudentSubjectRoutes);
 app.use("/api", notifyRoutes);
 app.use("/api/blog", blogRoutes);
 app.use("/api/upload", uploadFileRoutes);
+app.use("/api/action", ActionRoutes);
 
 // WebSocket connection
 io.on("connection", (socket) => {
