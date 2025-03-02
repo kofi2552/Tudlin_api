@@ -3,7 +3,7 @@ import School from "../models/School.js";
 
 export const createSchool = async (req, res) => {
   const { name, address, type } = req.body;
-  console.log("new school:", req.body);
+  //console.log("new school:", req.body);
 
   try {
     // Generate specialId
@@ -32,10 +32,10 @@ export const createSchool = async (req, res) => {
 
 export const getSchool = async (req, res) => {
   const { schoolId } = req.params;
-  console.log("school id: ", schoolId);
+  //console.log("school id: ", schoolId);
   try {
     const school = await School.findOne({ where: { specialId: schoolId } });
-    console.log("school found: ", school);
+    //console.log("school found: ", school);
     res.status(200).json({ school: school });
   } catch (error) {
     console.error("Error fetching school:", error);

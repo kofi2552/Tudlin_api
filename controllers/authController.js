@@ -10,6 +10,7 @@ import { Resend } from "resend";
 import sendMail from "../utils/sendMail.js";
 import sequelize from "../database.js";
 import School from "../models/School.js";
+import ActionLog from "../models/ActionLogs.js";
 
 dotenv.config();
 
@@ -172,6 +173,17 @@ export const signup = async (req, res) => {
       // Commit transaction
       await transaction.commit();
 
+      try {
+        await ActionLog.create({
+          userId: newUser.id,
+          type: "Success",
+          content: "New Signup",
+          schoolId: newUser.schoolId,
+        });
+      } catch (logError) {
+        console.error("Failed to log signup action:", logError);
+      }
+
       // Generate JWT token
       const token = jwt.sign(
         { id: newUser.id, username: newUser.username },
@@ -249,6 +261,17 @@ export const login = async (req, res) => {
       sameSite: "lax", // Strict cross-site cookie policy
       maxAge: 12 * 60 * 60 * 1000, // 1 hour
     });
+
+    try {
+      await ActionLog.create({
+        userId: user.id,
+        type: "Success",
+        content: "New User Login",
+        schoolId: user.schoolId,
+      });
+    } catch (logError) {
+      console.error("Failed to log signup action:", logError);
+    }
 
     res.status(200).json({ message: "Login successful.", user: user, token });
   } catch (error) {
