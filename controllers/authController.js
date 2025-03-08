@@ -17,6 +17,7 @@ dotenv.config();
 // const resend = new Resend(process.env.RESEND_API_KEY);
 
 const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_REFRESH_SECRET = process.env.REFRESH_TOKEN_SECRET;
 
 // export const signup = async (req, res) => {
 //   const { username, email, password, role, subjects } = req.body;
@@ -252,14 +253,28 @@ export const login = async (req, res) => {
     const token = jwt.sign(
       { id: user.id, username: user.username },
       JWT_SECRET,
-      { expiresIn: "12h" }
+      { expiresIn: "1h" }
     );
+
+    const refreshToken = jwt.sign(
+      { id: user.id },
+      JWT_REFRESH_SECRET,
+      { expiresIn: "7d" } // Longer lifespan for persistent login
+    );
+
     // Set the token in an HTTP-only cookie
     res.cookie("authToken", token, {
       httpOnly: true, // Secure and inaccessible to client-side scripts
       secure: process.env.NODE_ENV === "production", // Only in HTTPS in production
       sameSite: "lax", // Strict cross-site cookie policy
       maxAge: 12 * 60 * 60 * 1000, // 1 hour
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     try {
@@ -537,3 +552,27 @@ export const updatePassword = async (req, res, next) => {
 //     });
 //   }
 // };
+
+export const refreshToken = async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) return res.sendStatus(401);
+
+  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403);
+
+    const newAccessToken = jwt.sign(
+      { id: user.id, username: user.username },
+      JWT_REFRESH_SECRET,
+      { expiresIn: "1h" } // Issue new access token
+    );
+
+    res.cookie("authToken", newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 1000, // 1 hour
+    });
+
+    res.sendStatus(200);
+  });
+};

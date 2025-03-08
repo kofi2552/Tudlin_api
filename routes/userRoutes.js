@@ -27,7 +27,7 @@ router.put("/edit/:id", updateUser);
 // Delete a user
 router.delete("/del/:id", deleteUser);
 
-router.get("/all/:schoolId", verifyToken, getAllTutorsBySchool);
+router.get("/all/:schoolId", getAllTutorsBySchool);
 
 // router.post("/add", verifyToken, createUser);
 
