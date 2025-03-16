@@ -10,7 +10,7 @@ const Subject = sequelize.define(
       primaryKey: true,
     },
     name: { type: DataTypes.STRING, allowNull: false },
-    content: { type: DataTypes.STRING, allowNull: true },
+    content: { type: DataTypes.TEXT("long"), allowNull: true },
     studyareaid: {
       type: DataTypes.UUID, // Changed from STRING to INTEGER
       allowNull: true,

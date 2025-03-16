@@ -344,7 +344,7 @@ export const getSubjectsByCurriculum = async (req, res) => {
     const subjects = curriculumSubjects.map((curriculumSubject) => {
       const subject = curriculumSubject.subject; // Access the linked subject
       return {
-        id: subject.id,
+        subjectId: subject.id,
         name: subject.name,
         studyArea: subject.studyarea?.name || "Unknown", // Include study area details
         isArchive: subject.isArchive, // Include isArchive value
@@ -361,16 +361,16 @@ export const getSubjectsByCurriculum = async (req, res) => {
 // Controller to add a subject to a curriculum
 export const addSubjectToCurriculum = async (req, res) => {
   const { curriculumId } = req.params;
-  const { name, studyareaid } = req.body;
-  console.log("body: ", req.body);
-  console.log(
-    "received subject to be added data: ",
-    curriculumId,
-    " : ",
-    name,
-    " : ",
-    studyareaid
-  );
+  const { name, studyareaid, content } = req.body;
+  console.log("Curriculum Controller - body: ", req.body);
+  // console.log(
+  //   "received subject to be added data: ",
+  //   curriculumId,
+  //   " : ",
+  //   name,
+  //   " : ",
+  //   studyareaid
+  // );
 
   const transaction = await sequelize.transaction(); // Start a transaction
 
@@ -393,6 +393,7 @@ export const addSubjectToCurriculum = async (req, res) => {
     const newSubject = await Subject.create(
       {
         name,
+        content,
         studyareaid: studyareaid,
         curriculumId: curriculumId,
       },
@@ -410,6 +411,7 @@ export const addSubjectToCurriculum = async (req, res) => {
     const newCurriculumSubject = await CurriculumSubject.create(
       {
         name: newSubject.name,
+        content: newSubject.content,
         subjectId: newSubject.id,
         studyArea: studyarea.name,
         studyAreaId: studyareaid,
@@ -438,9 +440,9 @@ export const addSubjectToCurriculum = async (req, res) => {
 
 export const editCurriculumSubject = async (req, res) => {
   const { subjectId, curriculumId } = req.params;
-  const { name, studyareaid } = req.body;
+  const { name, studyareaid, content } = req.body;
 
-  console.log("Subject to Update: ", subjectId, name, studyareaid);
+  console.log("Subject to Update: ", subjectId, name, content, studyareaid);
 
   try {
     // Update the associated record in the CurriculumSubject table
@@ -465,9 +467,10 @@ export const editCurriculumSubject = async (req, res) => {
     await subject.update({
       id: subjectId,
       name,
+      content,
       studyareaid: studyareaid,
     });
-    console.log("Subject updated in Subject table:", subject);
+    console.log("Subject updated success in Subject table:", subject);
 
     if (curriculumSubject) {
       await curriculumSubject.update({
@@ -477,7 +480,7 @@ export const editCurriculumSubject = async (req, res) => {
         studyArea: StudyArea?.name,
       });
       console.log(
-        "Subject updated in CurriculumSubject table:",
+        "Subject also updated in CurriculumSubject table:",
         curriculumSubject
       );
     }

@@ -277,6 +277,9 @@ export const login = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
+    console.log("Generated Auth Token:", token);
+    console.log("Generated Refresh Token:", refreshToken);
+
     try {
       await ActionLog.create({
         userId: user.id,

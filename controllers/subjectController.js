@@ -7,12 +7,13 @@ import {
 
 // Create a new class
 export const createSubject = async (req, res) => {
-  const { name } = req.body;
-  console.log("new subject name:", name);
+  const { name, content } = req.body;
+  console.log("new subject name:", name, content);
 
   try {
     const newSubject = await Subject.create({
       name,
+      content,
     });
     res
       .status(201)
@@ -74,7 +75,7 @@ export const getSubjects = async (req, res) => {
 // Update subject details
 export const updateSubject = async (req, res) => {
   const { id } = req.params; // Subject ID from the URL
-  const { subjectName, curriculumId } = req.body;
+  const { subjectName, curriculumId, content } = req.body;
   console.log("Updated subject id:", id, req.body);
 
   try {
@@ -87,6 +88,7 @@ export const updateSubject = async (req, res) => {
     // Update subject details
     await subjectToUpdate.update({
       name: subjectName || subjectToUpdate.subjectName,
+      content: content || subjectToUpdate.content,
       curriculumId: curriculumId || subjectToUpdate.curriculumId,
     });
 

@@ -6,6 +6,10 @@ import Student from "../models/Student.js";
 import Subjects from "../models/Subjects.js";
 import Class from "../models/Class.js";
 import Quiz from "../models/Quiz.js";
+import Curriculum from "../models/Curriculum.js";
+import StudyAreas from "../models/StudyAreas.js";
+import sequelize from "../database.js";
+import CurriculumSubject from "../models/CurriculumSubject.js";
 
 export const processStudents = async (req, res) => {
   console.log("uploading students....", req.file);
@@ -45,9 +49,94 @@ export const processStudents = async (req, res) => {
   }
 };
 
+export const processCurrSubjects = async (req, res) => {
+  console.log("Uploading curr subjects....", req.file);
+
+  if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+
+  const { curriculumId } = req.params; // Get curriculum ID from request params
+
+  try {
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.readFile(req.file.path);
+    const worksheet = workbook.worksheets[0];
+
+    // Validate curriculum exists
+    const curriculum = await Curriculum.findByPk(curriculumId);
+    if (!curriculum) {
+      return res.status(404).json({ message: "Curriculum not found" });
+    }
+
+    const subjects = worksheet
+      .getSheetValues()
+      .slice(2)
+      .map((row) => ({
+        name: row[1]?.trim() || null,
+        content: row[2]?.trim() || null,
+        studyareaid: row[3] || null,
+        class_id: row[4]?.trim() || null,
+        curriculumId, // Assign curriculum ID to all subjects
+      }))
+      .filter((subject) => subject.name); // Remove empty subjects
+
+    if (subjects.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "No valid subjects found in file" });
+    }
+
+    const transaction = await sequelize.transaction(); // Start a transaction
+
+    try {
+      for (let subject of subjects) {
+        let studyarea = null;
+
+        // Validate study area if provided
+        if (subject.studyareaid) {
+          studyarea = await StudyAreas.findByPk(subject.studyareaid, {
+            transaction,
+          });
+          if (!studyarea) {
+            await transaction.rollback();
+            return res
+              .status(400)
+              .json({ message: `Study area ${subject.studyareaid} not found` });
+          }
+        }
+
+        // Create subject in Subjects table
+        const newSubject = await Subjects.create(subject, { transaction });
+
+        // Add subject to CurriculumSubjects table
+        await CurriculumSubject.create(
+          {
+            name: newSubject.name,
+            content: newSubject.content,
+            subjectId: newSubject.id,
+            studyArea: studyarea ? studyarea.name : null, // Assign name properly
+            studyAreaId: studyarea ? studyarea.id : null, // Ensure valid ID
+            curriculumId: curriculumId,
+          },
+          { transaction }
+        );
+      }
+
+      await transaction.commit();
+      fs.unlinkSync(req.file.path); // Delete the file after processing
+      res.json({ message: "Subjects uploaded successfully" });
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  } catch (error) {
+    console.log("Error processing file", error);
+    res.status(500).json({ message: "Error processing file", error });
+  }
+};
+
 // Process Subjects Upload
 export const processSubjects = async (req, res) => {
-  console.log("uploading subjects....", req.file);
+  //console.log("uploading subjects....", req.file);
 
   if (!req.file) return res.status(400).json({ message: "No file uploaded" });
 
@@ -61,17 +150,19 @@ export const processSubjects = async (req, res) => {
       .slice(2)
       .map((row) => ({
         name: row[1],
-        content: row[2],
+        content: row[2] || null,
         studyareaid: row[3],
-        class_id: row[4],
+        class_id: row[4] || null,
         curriculumId: row[5],
-      }));
-
+      }))
+      .filter((subject) => subject.name !== null);
+    // console.log("Parsed subjects:", subjects);
     await Subjects.bulkCreate(subjects);
     fs.unlinkSync(req.file.path);
     res.json({ message: "Subjects uploaded successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Error processing file", error });
+    console.log("BCK error processing file", error);
+    res.status(500).json({ message: "BCK Error processing file", error });
   }
 };
 

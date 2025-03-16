@@ -48,12 +48,22 @@ import createError from "./createError.js";
 export const verifyToken = async (req, res, next) => {
   try {
     // Get the token from cookies
-    const token =
-      req.cookies?.authToken || req.cookies?.__session || req.cookies?.Token;
+    const token = req.cookies.Token;
     if (!token) return next(createError(401, "You are not authenticated!"));
+
+    //console.log("Raw Token Before Processing:", token);
+
+    // Decode token without verification to check if it's a valid JWT format
+    const decodedHeader = jwt.decode(token, { complete: true });
+    if (!decodedHeader) {
+      return next(createError(403, "Invalid token format!"));
+    }
+
+    //console.log("Decoded Token Header:", decodedHeader);
 
     // Verify the token
     const payload = jwt.verify(token, process.env.JWT_SECRET);
+    //console.log("Token payload:", payload);
     if (!payload) return next(createError(403, "Invalid token!"));
 
     let user = await User.findOne({
