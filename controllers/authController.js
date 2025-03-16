@@ -160,7 +160,7 @@ export const signup = async (req, res) => {
           ([classId, subjectIds]) =>
             subjectIds.map((subjectId) => ({
               userId: newUser.id,
-              classId: parseInt(classId, 10),
+              classId: classId,
               subjectId,
             }))
         );
