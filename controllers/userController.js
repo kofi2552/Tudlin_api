@@ -2,6 +2,7 @@
 import User from "../models/User.js";
 import createError from "../middleware/createError.js";
 import School from "../models/School.js";
+import UserClassSubjects from "../models/UserClassSubject.js";
 
 // Create a new user
 export const createUser = async (req, res, next) => {
@@ -59,8 +60,14 @@ export const updateUser = async (req, res, next) => {
 // Delete a user
 export const deleteUser = async (req, res, next) => {
   try {
+    // Delete related records in UserClassSubjects first
+    await UserClassSubjects.destroy({ where: { userId: req.params.id } });
+
+    // Now delete the user
     const result = await User.destroy({ where: { id: req.params.id } });
+
     if (!result) return next(createError(404, "User not found"));
+
     res.status(204).send();
   } catch (error) {
     next(createError(500, "Error deleting user: " + error.message));

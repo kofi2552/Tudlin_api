@@ -23,50 +23,13 @@ const sendMail = (
     html: `<html>
           <head>
           <link
-            href="https://fonts.googleapis.com/css?family=Open+Sans:400,700&display=swap"
+            href="https://fonts.googleapis.com/css?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
             rel="stylesheet"
             type="text/css"
           />
             </head>
           <style type="text/css">
-            @media only screen and (min-width: 620px) {
-              .u-row {
-                width: 600px !important;
-              }
-              .u-row .u-col {
-                vertical-align: top;
-              }
-
-              .u-row .u-col-50 {
-                width: 300px !important;
-              }
-
-              .u-row .u-col-100 {
-                width: 600px !important;
-              }
-            }
-
-            @media (max-width: 620px) {
-              .u-row-container {
-                max-width: 100% !important;
-                padding-left: 0px !important;
-                padding-right: 0px !important;
-              }
-              .u-row .u-col {
-                min-width: 320px !important;
-                max-width: 100% !important;
-                display: block !important;
-              }
-              .u-row {
-                width: 100% !important;
-              }
-              .u-col {
-                width: 100% !important;
-              }
-              .u-col > div {
-                margin: 0 auto;
-              }
-            }
+          
             body {
               margin: 0;
               padding: 0;
@@ -106,8 +69,48 @@ const sendMail = (
               text-decoration: underline;
             }
             #u_content_text_4 a {
-              color: #810020;
+              color: #1677ff;
             }
+              
+            @media only screen and (min-width: 620px) {
+              .u-row {
+                width: 600px !important;
+              }
+              .u-row .u-col {
+                vertical-align: top;
+              }
+
+              .u-row .u-col-50 {
+                width: 300px !important;
+              }
+
+              .u-row .u-col-100 {
+                width: 600px !important;
+              }
+            }
+
+            @media (max-width: 620px) {
+              .u-row-container {
+                max-width: 100% !important;
+                padding-left: 0px !important;
+                padding-right: 0px !important;
+              }
+              .u-row .u-col {
+                min-width: 320px !important;
+                max-width: 100% !important;
+                display: block !important;
+              }
+              .u-row {
+                width: 100% !important;
+              }
+              .u-col {
+                width: 100% !important;
+              }
+              .u-col > div {
+                margin: 0 auto;
+              }
+            }
+              
             @media (max-width: 480px) {
               #u_content_image_1 .v-src-width {
                 width: auto !important;
@@ -143,17 +146,25 @@ const sendMail = (
                 text-align: center !important;
               }
             }
+              
+              .header {
+                  background-color: #1677ff;
+                  width: 100%;
+                  height: 80px;
+                  background-image: url(https://res.cloudinary.com/loyke/image/upload/v1742167061/koyarr/cgm1c03g1tr8pnnbbxqp.png)
+              }
           </style>
         <body
           class="clean-body u_body"
           style="
-            background-color: white;
+            background-color: #fafafa;
             margin: 0;
             padding: 0;
             -webkit-text-size-adjust: 100%;
             display: flex;
             justify-content: center;
             align-items: start;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
           "
         >
           <table
@@ -165,7 +176,7 @@ const sendMail = (
               mso-table-lspace: 0pt;
               mso-table-rspace: 0pt;
               vertical-align: top;
-              min-width: 320px;
+              max-width: 320px;
               margin: 0 auto;
             "
             cellpadding="0"
@@ -182,117 +193,29 @@ const sendMail = (
                 >
                   <div
                     class="u-row-container"
-                    style="padding: 0px; background-color: transparent"
+                    style="padding: 20px; background-color: transparent"
                   >
-                    <div
-                      class="u-row"
-                      style="
-                        margin: -15%  auto -10% auto;
-                        min-width: 320px;
-                        max-width: 600px;
-                        overflow-wrap: break-word;
-                        word-wrap: break-word;
-                        word-break: break-word;
-                        background-color: transparent;
-                      "
-                    >
-                      <div
-                        style="
-                          border-collapse: collapse;
-                          display: table;
-                          width: 100%;
-                          height: 100%;
-                          background-color: transparent;
-                        "
-                      >
-                        <div
-                          class="u-col u-col-100"
-                          style="
-                            max-width: 320px;
-                            min-width: 600px;
-                            display: table-cell;
-                            vertical-align: top;
-                          "
-                        >
-                          <div style="height: 100%; width: 100% !important">
-                            <div
-                              style="
-                                box-sizing: border-box;
-                                height: 100%;
-                                color: #ffff !important;
-                                border-top: 0px solid transparent;
-                                border-left: 0px solid transparent;
-                                border-right: 0px solid transparent;
-                                border-bottom: 0px solid transparent;
-                              "
-                            >
-                              
-
-                              <table
-                                id="u_content_image_1"
-                                style="font-family: 'Open Sans', sans-serif"
-                                role="presentation"
-                                cellpadding="0"
-                                cellspacing="0"
-                                width="100%"
-                                border="0"
-                              >
-                                <tbody>
-                                  <tr>
-                                    <td
-                                      class="v-container-padding-padding"
-                                      style="
-                                        overflow-wrap: break-word;
-                                        word-break: break-word;
-                                        padding: 120px 10px 20px 10px;
-                                        font-family: 'Open Sans', sans-serif;
-                                      "
-                                      align="left"
-                                    >
-                                      <table
-                                        width="100%"
-                                        cellpadding="0"
-                                        cellspacing="0"
-                                        border="0"
-                                            
-                                      >
-                                        <tr style="                                           
-                                              background-color: #1677ff !important;
-                                            ">
-                                          <td
-                                            class="v-text-align"
-                                            style="
-                                              padding-right: 0px;
-                                              padding-left: 0px;                                            
-                                              background-color: #1677ff;
-                                            "
-                                            align="center"
-                                          >
-                                            <div class="heading logo">
-                              <p style="padding: 20px; font-size: 34px; font-weight: bold; color: #ffff !important;">Tudlin App</p>
-                          </div>
-                                          </td>
-                                        </tr>
-                                      </table>
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        </div>
-                          
-                      </div>
-                    </div>
-
+                   
                     <div
                       class="u-row-container"
                       style="
                         padding: 0px;
                         background-color: transparent;
-                        margin-top: 6%;
+                        margin-top: 4%;
+                        border: 1px solid #efefef;
                       "
                     >
+                    <div class="header" style="
+                        display: flex;
+                        align-items: center;
+                        height: 80px;
+                    ">
+                        <img 
+                            style="width: 80px; margin-left: 20px"
+                         src="https://res.cloudinary.com/loyke/image/upload/v1742167304/koyarr/w8rrjbopu4n7zanbh5cg.png" 
+                        />
+                    </div>
+
                       <div
                         class="u-row"
                         style="
@@ -504,7 +427,7 @@ const sendMail = (
                                               border-radius: 4px;
                                               -webkit-border-radius: 4px;
                                               -moz-border-radius: 4px;
-                                              width: 50%;
+                                              width: 30%;
                                               max-width: 100%;
                                               overflow-wrap: break-word;
                                               word-break: break-word;
@@ -633,7 +556,7 @@ const sendMail = (
                                             Need help?
                                             <a
                                               rel="noopener"
-                                              href="mailto:dakwa.cephas@gmail.com"
+                                              href="mailto:kyde@tudlin.com"
                                               target="_blank"
                                               >Contact our support team</a
                                             >
@@ -656,10 +579,7 @@ const sendMail = (
             </tbody>
           </table>      
         </body>
-      </html>
-  
-
-    `,
+      </html>`,
   };
 
   // Send the email
