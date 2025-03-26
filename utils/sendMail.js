@@ -20,7 +20,8 @@ const sendMail = (
     from: `Tudlin" <${hostEmail}>`,
     to: userEmail,
     subject: subject,
-    html: `<html>
+    html: `
+    <html>
           <head>
           <link
             href="https://fonts.googleapis.com/css?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
@@ -148,23 +149,27 @@ const sendMail = (
             }
               
               .header {
-                  background-color: #1677ff;
-                  width: 100%;
-                  height: 80px;
-                  background-image: url(https://res.cloudinary.com/loyke/image/upload/v1742167061/koyarr/cgm1c03g1tr8pnnbbxqp.png)
+                  background-color: #f1f7ff;
+                  width: 100% !important;
+                  height: 80px !important;
+                  background-image: url(https://res.cloudinary.com/loyke/image/upload/v1742167061/koyarr/cgm1c03g1tr8pnnbbxqp.png);
+                  border-bottom: 1px solid #fafafa;      
+              }
+              .header img {
+                  object-fit: contain;
+                  display: block;
               }
           </style>
         <body
           class="clean-body u_body"
           style="
-            background-color: #fafafa;
             margin: 0;
             padding: 0;
             -webkit-text-size-adjust: 100%;
             display: flex;
             justify-content: center;
             align-items: start;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
+            border-radius: 20px;
           "
         >
           <table
@@ -203,15 +208,18 @@ const sendMail = (
                         background-color: transparent;
                         margin-top: 4%;
                         border: 1px solid #efefef;
+                        border-radius: 10px;
                       "
                     >
                     <div class="header" style="
                         display: flex;
                         align-items: center;
                         height: 80px;
+                        border-top-left-radius: 10px;
+                        border-top-right-radius: 10px;
                     ">
                         <img 
-                            style="width: 80px; margin-left: 20px"
+                            style="width: 80px; height: 43px; margin-left: 20px"
                          src="https://res.cloudinary.com/loyke/image/upload/v1742167304/koyarr/w8rrjbopu4n7zanbh5cg.png" 
                         />
                     </div>
@@ -250,7 +258,6 @@ const sendMail = (
                           >
                             <div
                               style="
-                                background-color: #ffffff;
                                 height: 100%;
                                 width: 100% !important;
                                 border-radius: 5px;
@@ -290,7 +297,7 @@ const sendMail = (
                                         style="
                                           overflow-wrap: break-word;
                                           word-break: break-word;
-                                          padding: 20px 10px 10px;
+                                          padding: 20px 10px 0px;
                                           font-family: 'Open Sans', sans-serif;
                                         "
                                         align="left"
@@ -299,28 +306,22 @@ const sendMail = (
                                           class="v-text-align"
                                           style="
                                             font-size: 14px;
-                                            line-height: 170%;
+                                            line-height: 150%;
                                             text-align: center;
                                             word-wrap: break-word;
                                           "
                                         >
                                           <p
-                                            style="font-size: 14px; line-height: 170%"
+                                            style="font-size: 14px; line-height: 150%"
                                           >
                                             <span
-                                              style="
-                                                font-size: 20px;
-                                                line-height: 34px;
-                                              "
-                                              ><strong
-                                                ><span
+                                              ><span
                                                   style="
                                                     line-height: 34px;
-                                                    font-size: 20px;
+                                                    font-size: 16px;
                                                   "
                                                   >${header},</span
-                                                ></strong
-                                              ></span
+                                                ></span
                                             >
                                           </p>
                                         </div>
@@ -367,7 +368,7 @@ const sendMail = (
                                           "
                                         >
                                           <p
-                                            style="font-size: 14px; line-height: 150%">
+                                            style="font-size: 20px; font-weight: 700; line-height: 150%">
                                             ${greetings}
                                               </p>
                                               <br>
@@ -547,7 +548,7 @@ const sendMail = (
                                             word-wrap: break-word;
                                             border: 0.5px solid #fff;
                                             border-top-color: #9bc9e2;
-                                            padding: 8px;
+                                            padding-top: 18px;
                                           "
                                         >
                                           <p
@@ -579,7 +580,9 @@ const sendMail = (
             </tbody>
           </table>      
         </body>
-      </html>`,
+      </html>
+
+    `,
   };
 
   // Send the email

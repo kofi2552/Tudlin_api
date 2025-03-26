@@ -731,6 +731,315 @@ export const getAllAssessments = async (req, res) => {
   }
 };
 
+export const getAllAssessmentsBySchool = async (req, res) => {
+  const { schoolId } = req.params; // Extract school ID from request
+
+  try {
+    const assessments = await Assessment.findAll({
+      where: { school_id: schoolId }, // Filter by school
+      include: [
+        { model: TaskCategory, attributes: ["name", "desc"] },
+        {
+          model: StudentAssessmentScore,
+          attributes: ["student_id", "score", "max_score", "isComplete"],
+          required: false, // Allow assessments with no scores yet
+        },
+      ],
+    });
+
+    res.status(200).json({ assessments });
+  } catch (err) {
+    res.status(500).json({
+      error: "Failed to fetch assessments",
+      details: err.message,
+    });
+  }
+};
+
+export const getGrandAveragePerformance = async (req, res) => {
+  const { schoolId } = req.params;
+
+  try {
+    // Fetch all students in the school
+    const students = await Student.findAll({
+      where: { schoolId: schoolId },
+      attributes: ["id", "class_id"],
+    });
+
+    if (!students.length) {
+      return res
+        .status(404)
+        .json({ error: "No students found for this school." });
+    }
+
+    // Fetch all assessments for the school
+    const assessments = await Assessment.findAll({
+      where: { schoolId: schoolId },
+      include: [
+        {
+          model: StudentAssessmentScore,
+          attributes: ["student_id", "score", "max_score"],
+        },
+      ],
+    });
+
+    if (!assessments.length) {
+      return res
+        .status(404)
+        .json({ error: "No assessments found for this school." });
+    }
+
+    // Initialize class-based data storage
+    let classScores = {};
+    let classAssessments = {};
+
+    students.forEach((student) => {
+      classScores[student.class_id] = 0;
+      classAssessments[student.class_id] = 0;
+    });
+
+    // Compute scores per class
+    assessments.forEach((assessment) => {
+      assessment.StudentAssessmentScores.forEach((scoreEntry) => {
+        const student = students.find((s) => s.id === scoreEntry.student_id);
+        if (student) {
+          classScores[student.class_id] += scoreEntry.score;
+          classAssessments[student.class_id]++;
+        }
+      });
+    });
+
+    // Compute class averages
+    let classAverages = {};
+    Object.keys(classScores).forEach((classId) => {
+      classAverages[classId] =
+        classAssessments[classId] > 0
+          ? classScores[classId] / classAssessments[classId]
+          : 0;
+    });
+
+    // Compute GRAND AVERAGE (Average of class averages)
+    const classValues = Object.values(classAverages);
+    const grandAverage =
+      classValues.length > 0
+        ? classValues.reduce((sum, avg) => sum + avg, 0) / classValues.length
+        : 0;
+
+    res.status(200).json({ grandAverage: grandAverage.toFixed(2) });
+  } catch (err) {
+    console.error("Error fetching grand average performance:", err);
+    res.status(500).json({
+      error: "Failed to calculate grand average performance",
+      details: err.message,
+    });
+  }
+};
+
+export const getTopPerformers = async (req, res) => {
+  const { schoolId } = req.params;
+
+  try {
+    // Fetch all students in the school
+    const students = await Student.findAll({
+      where: { schoolId },
+      attributes: ["id", "class_id", "name"], // Include names for better display
+    });
+
+    if (!students.length) {
+      return res
+        .status(404)
+        .json({ error: "No students found for this school." });
+    }
+
+    // Fetch all student assessment scores for this school
+    const assessments = await Assessment.findAll({
+      where: { schoolId },
+      include: [
+        {
+          model: StudentAssessmentScore,
+          attributes: ["student_id", "score", "max_score"],
+        },
+      ],
+    });
+
+    if (!assessments.length) {
+      return res
+        .status(404)
+        .json({ error: "No assessments found for this school." });
+    }
+
+    // Initialize student-based data storage
+    let studentScores = {}; // Store total scores per student
+    let studentAssessments = {}; // Store number of assessments per student
+
+    students.forEach((student) => {
+      studentScores[student.id] = 0;
+      studentAssessments[student.id] = 0;
+    });
+
+    // Compute scores per student
+    assessments.forEach((assessment) => {
+      assessment.StudentAssessmentScores.forEach((scoreEntry) => {
+        if (studentScores[scoreEntry.student_id] !== undefined) {
+          studentScores[scoreEntry.student_id] += scoreEntry.score;
+          studentAssessments[scoreEntry.student_id]++;
+        }
+      });
+    });
+
+    // Compute student averages and store them
+    let studentAverages = students.map((student) => ({
+      id: student.id,
+      name: `${student.name}`,
+      classId: student.class_id,
+      average:
+        studentAssessments[student.id] > 0
+          ? studentScores[student.id] / studentAssessments[student.id]
+          : 0,
+    }));
+
+    // Sort students by their average score (descending order)
+    studentAverages.sort((a, b) => b.average - a.average);
+
+    // Get the top 3 performers
+    const topPerformers = studentAverages.slice(0, 3);
+
+    res.status(200).json({ topPerformers });
+  } catch (err) {
+    console.error("Error fetching top performers:", err);
+    res.status(500).json({
+      error: "Failed to calculate top performers",
+      details: err.message,
+    });
+  }
+};
+
+export const getMostImprovedStudents = async (req, res) => {
+  const { schoolId } = req.params;
+
+  console.log("most imp sch ID: ", schoolId);
+
+  if (!schoolId) {
+    return res.status(404).json({ error: "No  school ID prvided!" });
+  }
+  try {
+    // 1. Fetch all students in the school
+    const students = await Student.findAll({
+      where: { schoolId },
+      attributes: ["id", "name", "class_id"],
+    });
+
+    if (!students.length || !students) {
+      return res
+        .status(404)
+        .json({ error: "No students found for this school." });
+    }
+
+    // 2. Fetch all student scores, ordered by date
+    const scores = await StudentAssessmentScore.findAll({
+      include: [
+        {
+          model: Assessment,
+          where: { schoolId },
+          attributes: ["id", "createdAt"],
+        },
+      ],
+      order: [["Assessment", "createdAt", "ASC"]], // Ensure assessments are sorted by date
+    });
+
+    if (!scores.length) {
+      return res.status(404).json({ error: "No assessment scores found." });
+    }
+
+    // 3. Compute improvement for each student
+    let studentProgress = {};
+
+    scores.forEach((entry) => {
+      const studentId = entry.student_id;
+      const score = entry.score;
+
+      if (!studentProgress[studentId]) {
+        studentProgress[studentId] = {
+          first: score,
+          last: score,
+          improvement: 0,
+        };
+      } else {
+        studentProgress[studentId].last = score;
+      }
+    });
+
+    // 4. Calculate improvement
+    Object.keys(studentProgress).forEach((studentId) => {
+      studentProgress[studentId].improvement =
+        studentProgress[studentId].last - studentProgress[studentId].first;
+    });
+
+    // 5. Get top 3 most improved students
+    const topImprovedStudents = Object.entries(studentProgress)
+      .sort((a, b) => b[1].improvement - a[1].improvement)
+      .slice(0, 3)
+      .map(([studentId, data]) => ({
+        studentId,
+        name: students.find((s) => s.id == studentId)?.name || "Unknown",
+        improvement: data.improvement.toFixed(2),
+      }));
+
+    res.status(200).json({ topImprovedStudents });
+  } catch (err) {
+    console.error("Error fetching most improved students:", err);
+    res.status(500).json({
+      error: "Failed to fetch most improved students",
+      details: err.message,
+    });
+  }
+};
+
+export const SubjectAverage = async (req, res) => {
+  const { currId } = req.params;
+
+  try {
+    const subjects = await Subject.findAll({
+      where: { curriculumId: currId }, // ✅ Fixed where clause
+      include: [
+        {
+          model: Assessment,
+          include: [
+            {
+              model: StudentAssessmentScore,
+              attributes: ["score"],
+            },
+          ],
+        },
+      ],
+    });
+
+    const subjectData = subjects.map((subject) => {
+      // Extract all scores for this subject
+      const scores = subject.Assessments.flatMap((assessment) =>
+        assessment.StudentAssessmentScores.map((s) => s.score)
+      );
+
+      // Calculate average score
+      const average =
+        scores.length > 0
+          ? scores.reduce((sum, score) => sum + score, 0) / scores.length
+          : 0;
+
+      return {
+        name: subject.name,
+        average: parseFloat(average.toFixed(2)), // Rounded to 2 decimals
+      };
+    });
+
+    // console.log("Subject Data: ", subjectData);
+    res.json(subjectData);
+  } catch (error) {
+    console.error("Error fetching subject performance:", error);
+    res.status(500).json({ error: "Failed to fetch subject performance" });
+  }
+};
+
 // Get Assessment by ID
 export const getAssessmentById = async (req, res) => {
   try {

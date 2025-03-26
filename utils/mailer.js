@@ -21,7 +21,8 @@ const mailer = (
     from: `Tudlin" <${hostEmail}>`,
     to: userEmail,
     subject: subject,
-    html: `<html>
+    html: `
+    <html>
 <head>
     <link
       href="https://fonts.googleapis.com/css?family=Open+Sans:400,700&display=swap"
@@ -63,7 +64,7 @@ const mailer = (
 
             table,
             td {
-              color: #000000;
+              color: #131313;
             }
             #u_body a {
               color: #0000ee;
@@ -147,12 +148,16 @@ const mailer = (
                 text-align: center !important;
               }
             }
-              
-              .header {
-                  background-color: #1677ff;
-                  width: 100%;
-                  height: 80px;
-                  background-image: url(https://res.cloudinary.com/loyke/image/upload/v1742169678/koyarr/pkhl8aj8zwgjciauhbui.png)
+                  .header {
+                  background-color: #f1f7ff;
+                  width: 100% !important;
+                  height: 80px !important;
+                  background-image: url(https://res.cloudinary.com/loyke/image/upload/v1742169678/koyarr/pkhl8aj8zwgjciauhbui.png);
+                  border-bottom: 1px solid #fafafa;      
+              }
+                  .header img {
+                  object-fit: contain;
+                  display: block;
               }
           </style>
   <body
@@ -203,6 +208,7 @@ const mailer = (
                   background-color: transparent;
                   margin-top: 4%;
                   border: 1px solid #efefef;
+                  border-radius: 10px;
                 "
               >
                   
@@ -210,9 +216,11 @@ const mailer = (
                         display: flex;
                         align-items: center;
                         height: 80px;
+                        border-top-left-radius: 10px;
+                        border-top-right-radius: 10px;
                     ">
                         <img 
-                            style="width: 80px; margin-left: 20px"
+                            style="width: 80px; height: 43px; margin-left: 20px;"
                          src="https://res.cloudinary.com/loyke/image/upload/v1742167304/koyarr/w8rrjbopu4n7zanbh5cg.png" 
                         />
                     </div>
@@ -251,7 +259,6 @@ const mailer = (
                     >
                       <div
                         style="
-                          background-color: #ffffff;
                           height: 100%;
                           width: 100% !important;
                           border-radius: 5px;
@@ -304,20 +311,18 @@ const mailer = (
                                     <p
                                       style="font-size: 14px; line-height: 170%"
                                     >
-                                      <span
-                                        style="
-                                          font-size: 20px;
-                                          line-height: 34px;
-                                        "
-                                        ><strong
-                                          ><span
-                                            style="
+                                      <span>
+<!--                                          <strong>-->
+                                              <span
+                                            style=
+                                                    "
                                               line-height: 34px;
-                                              font-size: 20px;
-                                            "
-                                            >${header1},</span
-                                          ></strong
-                                        ></span
+                                              font-size: 14px;
+                                                   "
+                                            >${header1},
+                                              </span>
+<!--                                          </strong>-->
+                                        </span
                                       >
                                     </p>
                                   </div>
@@ -357,7 +362,7 @@ const mailer = (
                                     "
                                   >
                                     <p
-                                      style="font-size: 14px; line-height: 170%"
+                                      style="font-size: 18px; line-height: 170%; font-weight: 700"
                                     >
                                     ${header2}
                                     </p>
@@ -405,7 +410,7 @@ const mailer = (
                                         border-radius: 4px;
                                         -webkit-border-radius: 4px;
                                         -moz-border-radius: 4px;
-                                        width: 50%;
+                                        width: 30%;
                                         max-width: 100%;
                                         overflow-wrap: break-word;
                                         word-break: break-word;
@@ -512,7 +517,7 @@ const mailer = (
                           word-wrap: break-word;
                           border: 0.5px solid #fff;
                           border-top-color: #9bc9e2;
-                          padding: 8px;
+                          padding-top: 18px;
                         "
                       >
                         <p
@@ -521,7 +526,7 @@ const mailer = (
                           Need help?
                           <a
                             rel="noopener"
-                            href="mailto:dakwa.cephas@gmail.com"
+                            href="mailto:kyde@tudlin.com"
                             target="_blank"
                             >Contact our support team</a
                           >
@@ -545,7 +550,8 @@ const mailer = (
                     </table>
             
   </body>
-</html>`,
+</html>
+    `,
   };
 
   // Send the email

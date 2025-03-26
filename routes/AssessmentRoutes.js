@@ -2,7 +2,7 @@ import express from "express";
 import {
   createTaskAssessment,
   createQuizAssessment,
-  getAllAssessments,
+  getAllAssessmentsBySchool,
   getAssessmentById,
   getAllAssessmentByUser,
   getAllAssessmentByStudent,
@@ -19,6 +19,10 @@ import {
   deleteScore,
   recordQuizAttempt,
   completeQuiz,
+  getGrandAveragePerformance,
+  getTopPerformers,
+  getMostImprovedStudents,
+  SubjectAverage,
 } from "../controllers/AssessmentController.js";
 import { verifyToken } from "../middleware/jwt.js";
 import upload from "../middleware/uploadMiddleware.js";
@@ -39,7 +43,11 @@ router.post("/quiz/finish/:assessmentId", completeQuiz);
 router.get("/:userId", getAllAssessmentByUser);
 router.get("/student/:studentId", getAllAssessmentByStudent); //for tracking student progress
 router.get("/student/all/:studentId", getAllAssessmentForStudent); //for student dashboard
-router.get("/all", getAllAssessments);
+router.get("/all/:schoolId", getAllAssessmentsBySchool);
+router.get("/grand-average/:schoolId", getGrandAveragePerformance);
+router.get("/top-performers/:schoolId", getTopPerformers);
+router.get("/most-improved/:schoolId", getMostImprovedStudents);
+router.get("/analytics/subject-performance/:currId", SubjectAverage);
 router.get("/task/:id", getAssessmentById);
 router.put("/edit/:id", updateAssessment);
 router.delete("/del/:id", deleteAssessment);

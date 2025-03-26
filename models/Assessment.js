@@ -140,6 +140,8 @@ Assessment.belongsTo(Subject, {
   onDelete: "CASCADE",
 });
 
+Subject.hasMany(Assessment, { foreignKey: "subject_id" });
+
 Assessment.belongsTo(Class, { foreignKey: "class_id" });
 
 Assessment.belongsToMany(Quiz, { through: "AssessmentQuiz" });
