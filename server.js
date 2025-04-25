@@ -56,6 +56,7 @@ app.use(
       "https://api.openweathermap.org",
       "https://www.tudlin.com",
       "http://localhost:5173",
+      "http://localhost:8000",
     ],
     credentials: true,
   })
